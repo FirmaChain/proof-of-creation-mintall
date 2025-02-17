@@ -30,7 +30,6 @@ DATABASE_NAME=your_db_name
 REDIS_HOST=localhost
 REDIS_PORT=6379
 REDIS_PASSWORD=your_redis_password
-REDIS_DB=0
 
 # JWT Configuration
 JWT_SECRET=your_jwt_secret
