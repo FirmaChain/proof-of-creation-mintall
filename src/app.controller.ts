@@ -1,5 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
-import { ROUTES } from './constants/routes.constants';
+import { ROUTES } from './common/constants/routes.constants';
 
 @Controller()
 export class AppController {

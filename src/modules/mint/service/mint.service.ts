@@ -1,10 +1,10 @@
 import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { MintEntity } from '../../../entities/mint.entity';
+import { MintEntity } from '../../entities/mint.entity';
 import { MintRequestDto } from '../dto/mint.request.dto';
 import { MintResponseDto } from '../dto/mint.response.dto';
-import { RedisService } from '../../../redis/redis.service';
+import { RedisService } from '../../../shared/redis/redis.service';
 
 @Injectable()
 export class MintService {

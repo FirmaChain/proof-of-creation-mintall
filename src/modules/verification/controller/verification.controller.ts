@@ -1,7 +1,7 @@
 import { Controller, Get, Param, UseGuards } from '@nestjs/common';
-import { FixedJwtAuthGuard } from 'src/auth/fixed-jwt-auth.guard';
+import { FixedJwtAuthGuard } from 'src/common/guards/fixed-jwt-auth.guard';
 import { VerificationService } from '../service/verification.service';
-import { ROUTES } from 'src/constants/routes.constants';
+import { ROUTES } from 'src/common/constants/routes.constants';
 
 @Controller(ROUTES.VERIFICATION.BASE)
 @UseGuards(FixedJwtAuthGuard)

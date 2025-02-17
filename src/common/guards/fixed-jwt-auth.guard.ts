@@ -5,8 +5,8 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Request } from 'express';
-import { jwtConstants } from '../config/default.config';
-import { HTTP_STATUS } from 'src/constants/http.status.constants';
+import { jwtConstants } from '../../config/default.config';
+import { HTTP_STATUS } from 'src/common/constants/http.status.constants';
 
 @Injectable()
 export class FixedJwtAuthGuard implements CanActivate {

@@ -4,7 +4,7 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { MintModule } from './modules/mint/mint.module';
 import { VerificationModule } from './modules/verification/verification.module';
-import { SuccessInterceptor } from './interceptors/success.interceptor';
+import { SuccessInterceptor } from './common/interceptors/success.interceptor';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TypeOrmConfigService } from './config/typeorm.config';
 import { RedisModule } from '@liaoliaots/nestjs-redis';

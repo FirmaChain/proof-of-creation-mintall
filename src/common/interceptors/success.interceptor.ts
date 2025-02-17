@@ -6,8 +6,7 @@ import {
 } from '@nestjs/common';
 import { Request } from 'express'; // Import the Request type from express
 import { Observable, map } from 'rxjs';
-import { HTTP_STATUS } from '../constants/http.status.constants'; // Import the HTTP status constants
-
+import { HTTP_STATUS } from '../constants/http.status.constants';
 @Injectable()
 export class SuccessInterceptor<T> implements NestInterceptor<T> {
   intercept(context: ExecutionContext, next: CallHandler<T>): Observable<any> {
