@@ -98,18 +98,23 @@ yarn start:prod
 ```
 src/
   ├── modules/
+  │   ├── entities/
   │   ├── mint/
   │   │   ├── controller/
   │   │   ├── service/
   │   │   ├── dto/
   │   │   └── interface/
   │   └── verification/
-  ├── entities/
   ├── common/
-  ├── auth/
-  ├── constants/
-  ├── config/
-  └── interceptors/
+  │   ├── constants/
+  │   ├── exceptions/
+  │   ├── guard/
+  │   ├── interceptor/
+  │   └── utils/
+  ├── shared/
+  │   ├── redis/
+  │   └── firma/
+  └── config/
 ```
 
 ## Contributing
