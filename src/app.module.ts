@@ -5,22 +5,18 @@ import { AppController } from './app.controller';
 import { MintModule } from './modules/mint/mint.module';
 import { VerificationModule } from './modules/verification/verification.module';
 import { SuccessInterceptor } from './common/interceptors/success.interceptor';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { TypeOrmConfigService } from './config/typeorm.config';
-import { RedisModule } from '@liaoliaots/nestjs-redis';
-import { RedisConfigService } from './config/redis.config';
+import { FirmaModule } from './shared/firma/firma.module';
+import { DatabaseModule } from './shared/database/database.module';
+import { RedisModule } from './shared/redis/redis.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    TypeOrmModule.forRootAsync({
-      useClass: TypeOrmConfigService,
-    }),
-    RedisModule.forRootAsync({
-      useClass: RedisConfigService,
-    }),
+    DatabaseModule,
+    RedisModule,
+    FirmaModule,
     MintModule,
     VerificationModule,
   ],

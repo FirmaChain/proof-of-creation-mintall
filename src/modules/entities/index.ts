@@ -1,3 +1,3 @@
-import { MintEntity } from './mint.entity';
+import { NFTCertificateEntity } from './nft.certificate.entity';
 
-export const entityList = [MintEntity];
+export const entityList = [NFTCertificateEntity];

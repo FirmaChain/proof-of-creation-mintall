@@ -1,10 +1,53 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { NFTCertificateEntity } from '../../../modules/entities/nft.certificate.entity';
+import { RedisService } from '../../../shared/redis/redis.service';
+import { Repository } from 'typeorm';
+import { VerificationRequestDto } from '../dto/verification.request.dto';
+import { ROUTES } from '../../../common/constants/routes.constants';
 
 @Injectable()
 export class VerificationService {
-  private readonly logger = new Logger('VerificationService');
+  private readonly logger = new Logger(`${ROUTES.VERIFICATION.NAME}Service`);
 
-  async checkVerification(id: string): Promise<any> {
-    return { message: 'Verification successful' };
+  constructor(
+    private redisService: RedisService,
+    @InjectRepository(NFTCertificateEntity)
+    private nftCertificateRepository: Repository<NFTCertificateEntity>,
+  ) {}
+
+  async checkVerification(
+    param: VerificationRequestDto,
+  ): Promise<string | null> {
+    try {
+      // check if the imageHash is already exists in the cache
+      const cacheData = await this.redisService.get(param.imageHash);
+
+      // if the imageHash is already exists in the cache, return the data
+      if (cacheData) {
+        return cacheData;
+      }
+
+      // if the imageHash is not in the cache, check if it is in the database
+      const nftCertificate = await this.nftCertificateRepository.findOne({
+        where: { imageHash: param.imageHash },
+      });
+
+      // if the imageHash is in the database
+      if (nftCertificate) {
+        // set the data in the cache
+        await this.redisService.set(
+          param.imageHash,
+          nftCertificate.nftMetadataUrl,
+        );
+        return nftCertificate.nftMetadataUrl;
+      }
+
+      // if the imageHash is not in the cache or database, throw an error
+      throw new NotFoundException('NFT certificate not found');
+    } catch (error) {
+      this.logger.error(error);
+      throw error;
+    }
   }
 }

@@ -1,10 +1,10 @@
 import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { MintEntity } from '../../entities/mint.entity';
 import { MintRequestDto } from '../dto/mint.request.dto';
 import { MintResponseDto } from '../dto/mint.response.dto';
 import { RedisService } from '../../../shared/redis/redis.service';
+import { NFTCertificateEntity } from '../../../modules/entities/nft.certificate.entity';
 
 @Injectable()
 export class MintService {
@@ -12,8 +12,8 @@ export class MintService {
 
   constructor(
     private redisService: RedisService, // Inject RedisClient
-    @InjectRepository(MintEntity)
-    private mintRepository: Repository<MintEntity>,
+    @InjectRepository(NFTCertificateEntity)
+    private nftCertificateRepository: Repository<NFTCertificateEntity>,
   ) {}
 
   async createMint(body: MintRequestDto): Promise<MintResponseDto[]> {
@@ -34,9 +34,5 @@ export class MintService {
       this.logger.error(error);
       throw error;
     }
-  }
-
-  async findAll(): Promise<MintEntity[]> {
-    return this.mintRepository.find();
   }
 }

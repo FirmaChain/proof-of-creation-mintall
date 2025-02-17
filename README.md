@@ -108,10 +108,12 @@ src/
   ├── common/
   │   ├── constants/
   │   ├── exceptions/
-  │   ├── guard/
-  │   ├── interceptor/
+  │   ├── guards/
+  │   ├── interceptors/
+  │   ├── dto/
   │   └── utils/
   ├── shared/
+  │   ├── database/
   │   ├── redis/
   │   └── firma/
   └── config/

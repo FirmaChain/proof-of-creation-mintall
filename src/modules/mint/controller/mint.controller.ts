@@ -11,7 +11,6 @@ export class MintController {
 
   @Post(ROUTES.MINT.CREATE)
   async createMint(@Body() body: MintRequestDto): Promise<any> {
-    // Call the service to handle the minting logic
     return await this.mintService.createMint(body);
   }
 }

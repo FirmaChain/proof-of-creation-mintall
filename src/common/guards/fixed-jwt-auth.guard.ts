@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { Request } from 'express';
 import { jwtConstants } from '../../config/default.config';
-import { HTTP_STATUS } from 'src/common/constants/http.status.constants';
+import { HTTP_STATUS } from '../../common/constants/http.status.constants';
 
 @Injectable()
 export class FixedJwtAuthGuard implements CanActivate {
