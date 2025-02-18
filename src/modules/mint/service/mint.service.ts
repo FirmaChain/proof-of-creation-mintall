@@ -26,9 +26,10 @@ export class MintService {
 
   async createMint(body: MintRequestDto): Promise<string> {
     try {
-      // private key
+      // private key (TODO: 환경변수로 변경)
       const privateKey =
         '0x7c2821a07f52e8ed0a15c3ee34a42195ed2e276f9cfd4bf50ac9f3066070fbc7';
+      // token uri (TODO: 환경변수로 변경)
       const tokenUri = 'https://images.app.goo.gl/it644rEhzNcvDXLSA';
 
       // verification
