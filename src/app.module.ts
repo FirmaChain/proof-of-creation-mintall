@@ -5,7 +5,7 @@ import { AppController } from './app.controller';
 import { MintModule } from './modules/mint/mint.module';
 import { VerificationModule } from './modules/verification/verification.module';
 import { SuccessInterceptor } from './common/interceptors/success.interceptor';
-import { FirmaModule } from './shared/firma/firma.module';
+// import { FirmaModule } from './shared/firma/firma.module';
 import { DatabaseModule } from './shared/database/database.module';
 import { RedisModule } from './shared/redis/redis.module';
 
@@ -16,7 +16,7 @@ import { RedisModule } from './shared/redis/redis.module';
     }),
     DatabaseModule,
     RedisModule,
-    FirmaModule,
+    // FirmaModule,
     MintModule,
     VerificationModule,
   ],

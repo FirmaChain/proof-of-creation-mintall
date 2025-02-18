@@ -4,11 +4,10 @@ import { NFTCertificateEntity } from '../../../modules/entities/nft.certificate.
 import { RedisService } from '../../../shared/redis/redis.service';
 import { Repository } from 'typeorm';
 import { VerificationRequestDto } from '../dto/verification.request.dto';
-import { ROUTES } from '../../../common/constants/routes.constants';
 
 @Injectable()
 export class VerificationService {
-  private readonly logger = new Logger(`${ROUTES.VERIFICATION.NAME}Service`);
+  private readonly logger = new Logger(VerificationService.name);
 
   constructor(
     private redisService: RedisService,
@@ -25,6 +24,7 @@ export class VerificationService {
 
       // if the imageHash is already exists in the cache, return the data
       if (cacheData) {
+        this.logger.log(`Get data from cache`);
         return cacheData;
       }
 
@@ -32,9 +32,11 @@ export class VerificationService {
       const nftCertificate = await this.nftCertificateRepository.findOne({
         where: { imageHash: param.imageHash },
       });
+      this.logger.log(`Get data from database`);
 
       // if the imageHash is in the database
       if (nftCertificate) {
+        this.logger.log(`Reset cache data`);
         // set the data in the cache
         await this.redisService.set(
           param.imageHash,

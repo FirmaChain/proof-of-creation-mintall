@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
-import { HttpExceptionFilter } from './common/exception/http.exception.filter';
+// import { HttpExceptionFilter } from './common/exception/http.exception.filter';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import helmet from 'helmet';
 
@@ -10,8 +10,8 @@ async function bootstrap() {
   const logger = new Logger('NestApplication', {
     timestamp: true,
   });
+  // app.useGlobalFilters(new HttpExceptionFilter());
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
-  app.useGlobalFilters(new HttpExceptionFilter());
 
   app.use(
     helmet({

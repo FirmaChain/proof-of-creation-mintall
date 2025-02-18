@@ -2,34 +2,66 @@ import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { MintRequestDto } from '../dto/mint.request.dto';
-import { MintResponseDto } from '../dto/mint.response.dto';
 import { RedisService } from '../../../shared/redis/redis.service';
 import { NFTCertificateEntity } from '../../../modules/entities/nft.certificate.entity';
+import { FirmaService } from '../../../shared/firma/firma.service';
+import { FirmaSDK } from '@firmachain/firma-js';
+import { BroadcastTxResponse } from '@firmachain/firma-js/dist/sdk/firmachain/common/stargateclient';
+import { RowLog } from '../interface/mint.interface';
 
 @Injectable()
 export class MintService {
-  private readonly logger = new Logger('MintService');
+  private readonly logger = new Logger(`${MintService.name}`);
+  private readonly firmaSDK: FirmaSDK;
 
   constructor(
-    private redisService: RedisService, // Inject RedisClient
+    private redisService: RedisService,
     @InjectRepository(NFTCertificateEntity)
     private nftCertificateRepository: Repository<NFTCertificateEntity>,
-  ) {}
+    private firmaService: FirmaService,
+  ) {
+    this.firmaSDK = this.firmaService.getSDK();
+  }
 
-  async createMint(body: MintRequestDto): Promise<MintResponseDto[]> {
+  async createMint(body: MintRequestDto): Promise<string> {
     try {
-      const resData = [
-        { name: 'test', description: 'test', image: 'test', attributes: [] },
-        { name: 'test2', description: 'test2', image: 'test2', attributes: [] },
-      ];
+      // private key
+      const privateKey = '';
+      const tokenUri = '';
 
-      await this.redisService.set('exampleKey', 'exampleValue');
+      // wallet
+      const wallet = await this.firmaSDK.Wallet.fromPrivateKey(privateKey);
 
-      if (resData.length !== 0) {
-        throw new BadRequestException('test');
+      // mint
+      const res: BroadcastTxResponse = await this.firmaSDK.Nft.mint(
+        wallet,
+        tokenUri,
+      );
+
+      // check mint result
+      if (!res || res.code !== 0 || !res.rawLog || res.rawLog.length === 0) {
+        throw new BadRequestException('NFT mint failed');
       }
 
-      return resData;
+      // parse rawLog
+      const rawLog = JSON.parse(res.rawLog) as RowLog;
+      const tokenId = rawLog[0].events[0].attributes[2].value;
+
+      // save nft certificate in database
+      const nftCertificateEntity = new NFTCertificateEntity();
+      nftCertificateEntity.imageHash = body.imageHash;
+      nftCertificateEntity.imagePerceptualHash = body.imagePerceptualHash || '';
+      nftCertificateEntity.nftMetadataUrl = tokenUri;
+      nftCertificateEntity.tokenId = tokenId;
+      await this.nftCertificateRepository.save(nftCertificateEntity);
+      this.logger.log(`Save nft certificate in database`);
+
+      // set cache
+      await this.redisService.set(body.imageHash, tokenUri);
+      this.logger.log(`Set cache`);
+
+      // return tokenId
+      return tokenUri;
     } catch (error) {
       this.logger.error(error);
       throw error;

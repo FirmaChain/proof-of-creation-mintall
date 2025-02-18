@@ -13,14 +13,12 @@ export class RedisConfigService implements RedisOptionsFactory {
     const host = this.configService.get<string>('REDIS_HOST') || 'localhost';
     const port = this.configService.get<number>('REDIS_PORT') || 6379;
     const password = this.configService.get<string>('REDIS_PASSWORD') || '';
-    const db = this.configService.get<number>('REDIS_DB') || 0;
 
     return {
       config: {
         host,
         port,
         password,
-        db,
       },
     };
   }

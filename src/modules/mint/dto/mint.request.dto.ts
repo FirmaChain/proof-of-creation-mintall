@@ -1,8 +1,8 @@
 import { IsOptional, IsString, IsObject, IsNotEmpty } from 'class-validator';
 
 export class MintRequestDto {
-  // @IsString()
-  // @IsNotEmpty()
+  @IsString()
+  @IsNotEmpty()
   imageHash: string;
 
   // @IsString()
