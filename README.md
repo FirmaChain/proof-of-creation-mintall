@@ -59,7 +59,7 @@ yarn start:debug
 
 ### Development Environment
 
-Use the following command to start the development server:
+Use the following command to start the development server with PM2:
 
 ```bash
 yarn start:dev
@@ -67,7 +67,7 @@ yarn start:dev
 
 ### Production Environment
 
-Build the project and start the production server:
+Use the following command to start the production server with PM2:
 
 ```bash
 yarn start:prod
