@@ -27,8 +27,9 @@ export class MintService {
   async createMint(body: MintRequestDto): Promise<string> {
     try {
       // private key
-      const privateKey = '';
-      const tokenUri = '';
+      const privateKey =
+        '0x7c2821a07f52e8ed0a15c3ee34a42195ed2e276f9cfd4bf50ac9f3066070fbc7';
+      const tokenUri = 'https://images.app.goo.gl/it644rEhzNcvDXLSA';
 
       // verification
       const verificationRequest = new VerificationRequestDto();
