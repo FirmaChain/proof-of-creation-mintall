@@ -8,6 +8,7 @@ import { FirmaService } from '../../../shared/firma/firma.service';
 import { FirmaSDK } from '@firmachain/firma-js';
 import { BroadcastTxResponse } from '@firmachain/firma-js/dist/sdk/firmachain/common/stargateclient';
 import { RowLog } from '../interface/mint.interface';
+import { VerificationRequestDto } from '../../../modules/verification/dto/verification.request.dto';
 
 @Injectable()
 export class MintService {
@@ -28,6 +29,26 @@ export class MintService {
       // private key
       const privateKey = '';
       const tokenUri = '';
+
+      // verification
+      const verificationRequest = new VerificationRequestDto();
+      verificationRequest.imageHash = body.imageHash;
+
+      // check cache data
+      const cacheData = await this.redisService.get(body.imageHash);
+      if (cacheData) {
+        this.logger.log(`DATA already exists in cache`);
+        return cacheData;
+      }
+
+      // check database data
+      const nftCertificate = await this.nftCertificateRepository.findOne({
+        where: { imageHash: body.imageHash },
+      });
+      if (nftCertificate) {
+        this.logger.log(`DATA already exists in database`);
+        return nftCertificate.nftMetadataUrl;
+      }
 
       // wallet
       const wallet = await this.firmaSDK.Wallet.fromPrivateKey(privateKey);

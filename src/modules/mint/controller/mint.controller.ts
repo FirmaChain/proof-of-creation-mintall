@@ -13,9 +13,13 @@ export class MintController {
 
   @Post(ROUTES.MINT.CREATE)
   async createMint(@Body() body: MintRequestDto): Promise<any> {
-    this.logger.log(`/${ROUTES.MINT.CREATE} - REQ: ${JSON.stringify(body)}`);
+    this.logger.log(
+      `POST ${ROUTES.MINT.BASE}/${ROUTES.MINT.CREATE} - REQ: ${JSON.stringify(body)}`,
+    );
     const result = await this.mintService.createMint(body);
-    this.logger.log(`/${ROUTES.MINT.CREATE} - RES: success`);
+    this.logger.log(
+      `POST ${ROUTES.MINT.BASE}/${ROUTES.MINT.CREATE} - RES: success`,
+    );
     return result;
   }
 }

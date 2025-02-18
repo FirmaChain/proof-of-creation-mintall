@@ -15,10 +15,12 @@ export class VerificationController {
     @Query() query: VerificationRequestDto,
   ): Promise<any> {
     this.logger.log(
-      `/${ROUTES.VERIFICATION.CHECK} - REQ: ${JSON.stringify(query)}`,
+      `GET ${ROUTES.VERIFICATION.BASE}/${ROUTES.VERIFICATION.CHECK} - REQ: ${JSON.stringify(query)}`,
     );
     const result = await this.verificationService.checkVerification(query);
-    this.logger.log(`/${ROUTES.VERIFICATION.CHECK} - RES: success`);
+    this.logger.log(
+      `GET ${ROUTES.VERIFICATION.BASE}/${ROUTES.VERIFICATION.CHECK} - RES: success`,
+    );
     return result;
   }
 }
