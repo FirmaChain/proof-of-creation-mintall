@@ -19,8 +19,8 @@ describe('VerificationService', () => {
         {
           provide: RedisService,
           useValue: {
+            hgetall: jest.fn(),
             get: jest.fn(),
-            set: jest.fn(),
           },
         },
         {
@@ -34,47 +34,58 @@ describe('VerificationService', () => {
 
     service = module.get<VerificationService>(VerificationService);
     redisService = module.get<RedisService>(RedisService);
-    nftCertificateRepository = module.get<Repository<NFTCertificateEntity>>(getRepositoryToken(NFTCertificateEntity));
+    nftCertificateRepository = module.get<Repository<NFTCertificateEntity>>(
+      getRepositoryToken(NFTCertificateEntity),
+    );
   });
 
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
 
-  it('should return data from cache if exists', async () => {
+  it('should return tokenId from cache if exists', async () => {
     const dto = new VerificationRequestDto();
-    dto.imageHash = 'mockImageHash';
+    dto.key = 'imageHash';
+    dto.value = 'mockImageHash';
 
-    jest.spyOn(redisService, 'get').mockResolvedValue('mockCacheData');
+    jest
+      .spyOn(redisService, 'hgetall')
+      .mockResolvedValue({ tokenId: 'mockTokenId' });
 
     const result = await service.checkVerification(dto);
 
-    expect(redisService.get).toHaveBeenCalledWith(dto.imageHash);
-    expect(result).toBe('mockCacheData');
+    expect(redisService.hgetall).toHaveBeenCalledWith(`image:${dto.value}`);
+    expect(result).toBe('mockTokenId');
   });
 
-  it('should return data from database if not in cache', async () => {
+  it('should return tokenId from database if not in cache', async () => {
     const dto = new VerificationRequestDto();
-    dto.imageHash = 'mockImageHash';
+    dto.key = 'imageHash';
+    dto.value = 'mockImageHash';
 
-    jest.spyOn(redisService, 'get').mockResolvedValue(null);
+    jest.spyOn(redisService, 'hgetall').mockResolvedValue({});
     jest.spyOn(nftCertificateRepository, 'findOne').mockResolvedValue({
-      nftMetadataUrl: 'mockDbData',
+      tokenId: 'mockDbTokenId',
     } as NFTCertificateEntity);
 
     const result = await service.checkVerification(dto);
 
-    expect(nftCertificateRepository.findOne).toHaveBeenCalledWith({ where: { imageHash: dto.imageHash } });
-    expect(result).toBe('mockDbData');
+    expect(nftCertificateRepository.findOne).toHaveBeenCalledWith({
+      where: { [dto.key]: dto.value },
+    });
+    expect(result).toBe('mockDbTokenId');
   });
 
   it('should throw NotFoundException if data not found', async () => {
     const dto = new VerificationRequestDto();
-    dto.imageHash = 'mockImageHash';
+    dto.key = 'imageHash';
+    dto.value = 'mockImageHash';
 
-    jest.spyOn(redisService, 'get').mockResolvedValue(null);
+    jest.spyOn(redisService, 'hgetall').mockResolvedValue({});
     jest.spyOn(nftCertificateRepository, 'findOne').mockResolvedValue(null);
 
-    await expect(service.checkVerification(dto)).rejects.toThrow(NotFoundException);
+    await expect(service.checkVerification(dto)).rejects.toThrow(
+      NotFoundException,
+    );
   });
 });

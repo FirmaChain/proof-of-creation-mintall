@@ -24,6 +24,8 @@ describe('MintService', () => {
           useValue: {
             get: jest.fn(),
             set: jest.fn(),
+            hset: jest.fn(),
+            hgetall: jest.fn(),
           },
         },
         {
@@ -77,7 +79,7 @@ describe('MintService', () => {
     expect(service).toBeDefined();
   });
 
-  it('should create a mint and return a token URI', async () => {
+  it('should create a mint and return a tokenId', async () => {
     const dto = new MintRequestDto();
     dto.imageHash = 'mockImageHash';
 
@@ -90,7 +92,7 @@ describe('MintService', () => {
     expect(nftCertificateRepository.findOne).toHaveBeenCalledWith({
       where: { imageHash: dto.imageHash },
     });
-    expect(result).toBe('https://images.app.goo.gl/it644rEhzNcvDXLSA');
+    expect(result).toBe('320');
   });
 
   it('should throw BadRequestException if mint fails', async () => {

@@ -1,13 +1,14 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsIn, IsNotEmpty, IsString } from 'class-validator';
 
 export class VerificationRequestDto {
   @IsNotEmpty()
   @IsString()
-  imageHash: string;
+  @IsIn(['imageHash', 'tokenId', 'transactionHash'], {
+    message: 'Invalid search key',
+  })
+  key: string;
 
-  // id?: string;
-  // imagePerceptualHash?: string;
-  // tokenId?: string;
-  // transactionHash?: string;
-  // nftMetadataUrl?: string;
+  @IsNotEmpty()
+  @IsString()
+  value: string;
 }

@@ -8,6 +8,7 @@ import { SuccessInterceptor } from './common/interceptors/success.interceptor';
 // import { FirmaModule } from './shared/firma/firma.module';
 import { DatabaseModule } from './shared/database/database.module';
 import { RedisModule } from './shared/redis/redis.module';
+import { SecretModule } from './shared/aws/aws.secret.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { RedisModule } from './shared/redis/redis.module';
     // FirmaModule,
     MintModule,
     VerificationModule,
+    SecretModule,
   ],
   controllers: [AppController],
   providers: [

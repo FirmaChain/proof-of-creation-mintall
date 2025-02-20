@@ -32,8 +32,8 @@ export class NFTCertificateEntity {
   @Column({ name: 'token_id', type: 'text' })
   tokenId: string;
 
-  @Column({ name: 'transaction_hash', type: 'text', nullable: true })
-  transactionHash?: string;
+  @Column({ name: 'transaction_hash', type: 'text' })
+  transactionHash: string;
 
   @Column({ name: 'nft_metadata_url', type: 'text' })
   nftMetadataUrl: string;

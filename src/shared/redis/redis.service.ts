@@ -29,8 +29,8 @@ export class RedisService {
     return await this.redis.del(key);
   }
 
-  async hset(key: string, field: string, value: string) {
-    return await this.redis.hset(key, field, value);
+  async hset(key: string, fields: Record<string, string>) {
+    return await this.redis.hset(key, fields);
   }
 
   async hget(key: string, field: string) {

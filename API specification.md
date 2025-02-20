@@ -67,5 +67,5 @@ Authorization: Bearer YOUR_API_KEY
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `imageHash` | `string` | ✅ Yes | SHA-256 hash of the image |
-| `version` | `string` | ❌ No | Optional API version |
+| `key` | `string` | ✅ Yes | The search key, must be one of `imageHash`, `tokenId`, or `transactionHash` |
+| `value` | `string` | ✅ Yes | The value corresponding to the search key |

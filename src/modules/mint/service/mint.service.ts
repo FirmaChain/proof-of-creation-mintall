@@ -8,7 +8,7 @@ import { FirmaService } from '../../../shared/firma/firma.service';
 import { FirmaSDK } from '@firmachain/firma-js';
 import { BroadcastTxResponse } from '@firmachain/firma-js/dist/sdk/firmachain/common/stargateclient';
 import { RowLog } from '../interface/mint.interface';
-import { VerificationRequestDto } from '../../../modules/verification/dto/verification.request.dto';
+import { SecretService } from '../../../shared/aws/aws.secret.service';
 
 @Injectable()
 export class MintService {
@@ -20,6 +20,7 @@ export class MintService {
     @InjectRepository(NFTCertificateEntity)
     private nftCertificateRepository: Repository<NFTCertificateEntity>,
     private firmaService: FirmaService,
+    private secretService: SecretService,
   ) {
     this.firmaSDK = this.firmaService.getSDK();
   }
@@ -27,14 +28,10 @@ export class MintService {
   async createMint(body: MintRequestDto): Promise<string> {
     try {
       // private key (TODO: 환경변수로 변경)
-      const privateKey =
-        '0x7c2821a07f52e8ed0a15c3ee34a42195ed2e276f9cfd4bf50ac9f3066070fbc7';
+      const privateKey = this.secretService.getPrivateKey() as string;
+
       // token uri (TODO: 환경변수로 변경)
       const tokenUri = 'https://images.app.goo.gl/it644rEhzNcvDXLSA';
-
-      // verification
-      const verificationRequest = new VerificationRequestDto();
-      verificationRequest.imageHash = body.imageHash;
 
       // check cache data
       const cacheData = await this.redisService.get(body.imageHash);
@@ -79,12 +76,20 @@ export class MintService {
       await this.nftCertificateRepository.save(nftCertificateEntity);
       this.logger.log(`Save nft certificate in database`);
 
-      // set cache
-      await this.redisService.set(body.imageHash, tokenUri);
-      this.logger.log(`Set cache`);
+      // hset cache
+      await this.redisService.hset(`image:${body.imageHash}`, {
+        tokenId,
+        transactionHash: res.transactionHash,
+      });
+      // make index
+      await this.redisService.set(`image:index:${tokenId}`, body.imageHash);
+      await this.redisService.set(
+        `image:index:${res.transactionHash}`,
+        body.imageHash,
+      );
+      this.logger.log('Set cache');
 
-      // return tokenId
-      return tokenUri;
+      return tokenId;
     } catch (error) {
       this.logger.error(error);
       throw error;

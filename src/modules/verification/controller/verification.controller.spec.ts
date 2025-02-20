@@ -15,7 +15,7 @@ describe('VerificationController', () => {
         {
           provide: VerificationService,
           useValue: {
-            checkVerification: jest.fn().mockResolvedValue('mockData'),
+            checkVerification: jest.fn().mockResolvedValue('mockTokenId'),
           },
         },
       ],
@@ -32,13 +32,14 @@ describe('VerificationController', () => {
     expect(controller).toBeDefined();
   });
 
-  it('should call checkVerification and return data', async () => {
+  it('should call checkVerification and return tokenId', async () => {
     const query = new VerificationRequestDto();
-    query.imageHash = 'mockImageHash';
+    query.key = 'imageHash';
+    query.value = 'mockImageHash';
 
     const result = await controller.checkVerification(query);
 
     expect(service.checkVerification).toHaveBeenCalledWith(query);
-    expect(result).toBe('mockData');
+    expect(result).toBe('mockTokenId');
   });
 });

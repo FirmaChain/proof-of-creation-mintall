@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  app:
+    image: node:23.6.0
+    container_name: mintall-nft-cert-api
+    working_dir: /app
+    volumes:
+      - .:/app
+    command: yarn start:dev
+    ports:
+      - '3000:3000'
+    environment:
+      - NODE_ENV=development
+      - DATABASE_HOST=db
+      - DATABASE_PORT=5432
+      - DATABASE_USER=postgres
+      - DATABASE_PASSWORD=postgres
+      - DATABASE_NAME=mintall
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - JWT_SECRET=your_jwt_secret
+    depends_on:
+      - db
+      - redis
+
+  db:
+    image: postgres:latest
+    container_name: mintall-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: mintall
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
+
+  redis:
+    image: redis:7
+    container_name: mintall-redis
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+
+volumes:
+  postgres_data:
+  redis_data:
