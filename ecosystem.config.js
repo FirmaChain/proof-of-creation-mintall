@@ -1,0 +1,36 @@
+module.exports = {
+  apps: [
+    {
+      name: 'mintall-nft-cert-api',
+      script: 'dist/main.js',
+      env: {
+        NODE_ENV: 'development',
+        PORT: '3000',
+        DATABASE_HOST: 'localhost',
+        DATABASE_PORT: '5432',
+        DATABASE_USER: 'user',
+        DATABASE_PASSWORD: 'password',
+        DATABASE_NAME: 'mintall',
+        REDIS_HOST: 'localhost',
+        REDIS_PORT: '6379',
+        FIXED_JWT_TOKEN: 'NFT_VERIFICATION_FIXED_TOKEN',
+        AWS_REGION: 'ap-southeast-1',
+        AWS_SECRET_NAME: 'prod/mintall-nft-cert-api/private-key',
+      },
+      env_production: {
+        NODE_ENV: 'production',
+        PORT: '3000',
+        DATABASE_HOST: '',
+        DATABASE_PORT: '5432',
+        DATABASE_USER: '',
+        DATABASE_PASSWORD: '',
+        DATABASE_NAME: 'mintall',
+        REDIS_HOST: '',
+        REDIS_PORT: '6379',
+        FIXED_JWT_TOKEN: 'NFT_VERIFICATION_FIXED_TOKEN',
+        AWS_REGION: 'ap-southeast-1',
+        AWS_SECRET_NAME: 'prod/mintall-nft-cert-api/private-key',
+      },
+    },
+  ],
+};
