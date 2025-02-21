@@ -19,14 +19,16 @@ describe('VerificationService', () => {
         {
           provide: RedisService,
           useValue: {
-            hgetall: jest.fn(),
-            get: jest.fn(),
+            hgetall: jest.fn().mockResolvedValue({}),
+            get: jest.fn().mockResolvedValue(null),
+            hset: jest.fn().mockResolvedValue(null),
+            set: jest.fn().mockResolvedValue(null),
           },
         },
         {
           provide: getRepositoryToken(NFTCertificateEntity),
           useValue: {
-            findOne: jest.fn(),
+            findOne: jest.fn().mockResolvedValue(null),
           },
         },
       ],
@@ -50,7 +52,7 @@ describe('VerificationService', () => {
 
     jest
       .spyOn(redisService, 'hgetall')
-      .mockResolvedValue({ tokenId: 'mockTokenId' });
+      .mockResolvedValueOnce({ tokenId: 'mockTokenId' });
 
     const result = await service.checkVerification(dto);
 
@@ -61,14 +63,16 @@ describe('VerificationService', () => {
   it('should return tokenId from database if not in cache', async () => {
     const dto = new VerificationRequestDto();
     dto.key = 'imageHash';
-    dto.value = 'mockImageHash';
+    dto.value = 'hash_5';
 
-    jest.spyOn(redisService, 'hgetall').mockResolvedValue({});
-    jest.spyOn(nftCertificateRepository, 'findOne').mockResolvedValue({
+    jest.spyOn(redisService, 'hgetall').mockResolvedValueOnce({});
+    jest.spyOn(nftCertificateRepository, 'findOne').mockResolvedValueOnce({
       tokenId: 'mockDbTokenId',
     } as NFTCertificateEntity);
 
     const result = await service.checkVerification(dto);
+
+    console.log('result', result);
 
     expect(nftCertificateRepository.findOne).toHaveBeenCalledWith({
       where: { [dto.key]: dto.value },
@@ -81,8 +85,8 @@ describe('VerificationService', () => {
     dto.key = 'imageHash';
     dto.value = 'mockImageHash';
 
-    jest.spyOn(redisService, 'hgetall').mockResolvedValue({});
-    jest.spyOn(nftCertificateRepository, 'findOne').mockResolvedValue(null);
+    jest.spyOn(redisService, 'hgetall').mockResolvedValueOnce({});
+    jest.spyOn(nftCertificateRepository, 'findOne').mockResolvedValueOnce(null);
 
     await expect(service.checkVerification(dto)).rejects.toThrow(
       NotFoundException,

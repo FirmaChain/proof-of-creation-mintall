@@ -16,6 +16,8 @@
 
 ## Environment Variables
 
+### Local Environment
+
 Create a `.envrc` file in the root directory of the project and add the following environment variables:
 
 ```plaintext
@@ -38,6 +40,10 @@ JWT_SECRET=your_jwt_secret
 NODE_ENV=development
 PORT=3000
 ```
+
+### Development & Production Environment (Get from AWS Secrets Manager)
+
+Use `ecosystem.config.js` to start with {env}.
 
 ## Installation
 

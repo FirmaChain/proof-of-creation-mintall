@@ -32,7 +32,7 @@ export class VerificationService {
         );
         cacheData = await this.redisService.hgetall(`image:${imageHash}`);
       }
-      if (cacheData) {
+      if (cacheData && cacheData.tokenId) {
         this.logger.log(`DATA already exists in cache`);
         return cacheData.tokenId;
       }
