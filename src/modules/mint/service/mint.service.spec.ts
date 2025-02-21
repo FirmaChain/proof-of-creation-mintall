@@ -1,19 +1,20 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { MintService } from './mint.service';
 import { RedisService } from '../../../shared/redis/redis.service';
-import { FirmaService } from '../../../shared/firma/firma.service';
 import { Repository } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { NFTCertificateEntity } from '../../../modules/entities/nft.certificate.entity';
+import { FirmaService } from '../../../shared/firma/firma.service';
+import { SecretService } from '../../../shared/aws/aws.secret.service';
 import { MintRequestDto } from '../dto/mint.request.dto';
 import { BadRequestException } from '@nestjs/common';
-import { BroadcastTxResponse } from '@firmachain/firma-js/dist/sdk/firmachain/common/stargateclient';
 
 describe('MintService', () => {
   let service: MintService;
   let redisService: RedisService;
-  let firmaService: FirmaService;
   let nftCertificateRepository: Repository<NFTCertificateEntity>;
+  let firmaService: FirmaService;
+  let secretService: SecretService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -22,10 +23,16 @@ describe('MintService', () => {
         {
           provide: RedisService,
           useValue: {
-            get: jest.fn(),
-            set: jest.fn(),
-            hset: jest.fn(),
-            hgetall: jest.fn(),
+            get: jest.fn().mockResolvedValue(null),
+            hset: jest.fn().mockResolvedValue(null),
+            set: jest.fn().mockResolvedValue(null),
+          },
+        },
+        {
+          provide: getRepositoryToken(NFTCertificateEntity),
+          useValue: {
+            findOne: jest.fn().mockResolvedValue(null),
+            save: jest.fn().mockResolvedValue(null),
           },
         },
         {
@@ -42,26 +49,21 @@ describe('MintService', () => {
                     {
                       events: [
                         {
-                          type: 'message',
-                          attributes: [
-                            { key: 'action', value: 'Mint' },
-                            { key: 'Owner', value: 'ownerAddress' },
-                            { key: 'nftID', value: '320' },
-                          ],
+                          attributes: [{}, {}, { value: 'mockTokenId' }],
                         },
                       ],
                     },
                   ]),
+                  transactionHash: 'mockTransactionHash',
                 }),
               },
             }),
           },
         },
         {
-          provide: getRepositoryToken(NFTCertificateEntity),
+          provide: SecretService,
           useValue: {
-            findOne: jest.fn(),
-            save: jest.fn(),
+            getPrivateKey: jest.fn().mockReturnValue('mockPrivateKey'),
           },
         },
       ],
@@ -69,42 +71,43 @@ describe('MintService', () => {
 
     service = module.get<MintService>(MintService);
     redisService = module.get<RedisService>(RedisService);
-    firmaService = module.get<FirmaService>(FirmaService);
     nftCertificateRepository = module.get<Repository<NFTCertificateEntity>>(
       getRepositoryToken(NFTCertificateEntity),
     );
+    firmaService = module.get<FirmaService>(FirmaService);
+    secretService = module.get<SecretService>(SecretService);
   });
 
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
 
-  it('should create a mint and return a tokenId', async () => {
+  it('should return tokenId if minting is successful', async () => {
     const dto = new MintRequestDto();
     dto.imageHash = 'mockImageHash';
-
-    jest.spyOn(redisService, 'get').mockResolvedValue(null);
-    jest.spyOn(nftCertificateRepository, 'findOne').mockResolvedValue(null);
+    dto.imagePerceptualHash = 'mockImagePerceptualHash';
 
     const result = await service.createMint(dto);
 
-    expect(redisService.get).toHaveBeenCalledWith(dto.imageHash);
-    expect(nftCertificateRepository.findOne).toHaveBeenCalledWith({
-      where: { imageHash: dto.imageHash },
+    expect(result).toBe('mockTokenId');
+    expect(redisService.hset).toHaveBeenCalledWith(`image:${dto.imageHash}`, {
+      tokenId: 'mockTokenId',
+      transactionHash: 'mockTransactionHash',
     });
-    expect(result).toBe('320');
+    expect(nftCertificateRepository.save).toHaveBeenCalled();
   });
 
-  it('should throw BadRequestException if mint fails', async () => {
-    const dto = new MintRequestDto();
-    dto.imageHash = 'mockImageHash';
-
-    jest.spyOn(firmaService.getSDK().Nft, 'mint').mockResolvedValue({
+  it('should throw BadRequestException if minting fails', async () => {
+    jest.spyOn(firmaService.getSDK().Nft, 'mint').mockResolvedValueOnce({
       code: 1,
       rawLog: '',
-      height: 0,
       transactionHash: '',
-    } as BroadcastTxResponse);
+      height: 0,
+    });
+
+    const dto = new MintRequestDto();
+    dto.imageHash = 'mockImageHash';
+    dto.imagePerceptualHash = 'mockImagePerceptualHash';
 
     await expect(service.createMint(dto)).rejects.toThrow(BadRequestException);
   });
