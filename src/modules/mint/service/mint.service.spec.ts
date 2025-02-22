@@ -26,6 +26,7 @@ describe('MintService', () => {
             get: jest.fn().mockResolvedValue(null),
             hset: jest.fn().mockResolvedValue(null),
             set: jest.fn().mockResolvedValue(null),
+            hgetall: jest.fn().mockResolvedValue(null),
           },
         },
         {
