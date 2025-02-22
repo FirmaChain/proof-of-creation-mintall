@@ -27,17 +27,19 @@ export class MintService {
 
   async createMint(body: MintRequestDto): Promise<string> {
     try {
-      // private key (TODO: 환경변수로 변경)
+      // Get private key from secret manager
       const privateKey = this.secretService.getPrivateKey() as string;
 
       // token uri (TODO: 환경변수로 변경)
       const tokenUri = 'https://images.app.goo.gl/it644rEhzNcvDXLSA';
 
       // check cache data
-      const cacheData = await this.redisService.get(body.imageHash);
-      if (cacheData) {
+      const cacheData = await this.redisService.hgetall(
+        `image:${body.imageHash}`,
+      );
+      if (cacheData && cacheData.tokenId) {
         this.logger.log(`DATA already exists in cache`);
-        return cacheData;
+        return cacheData.tokenId;
       }
 
       // check database data
@@ -46,7 +48,7 @@ export class MintService {
       });
       if (nftCertificate) {
         this.logger.log(`DATA already exists in database`);
-        return nftCertificate.nftMetadataUrl;
+        return nftCertificate.tokenId;
       }
 
       // wallet

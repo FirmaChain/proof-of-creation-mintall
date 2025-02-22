@@ -41,10 +41,10 @@ export class VerificationService {
       const nftCertificate = await this.nftCertificateRepository.findOne({
         where: { [searchKey]: searchValue },
       });
-      this.logger.log(`DATA already exists in database`);
 
       // if the imageHash is in the database
       if (nftCertificate) {
+        this.logger.log(`DATA already exists in database`);
         this.logger.log(`Reset cache data`);
         // set the data in the cache
         await this.redisService.hset(`image:${nftCertificate.imageHash}`, {

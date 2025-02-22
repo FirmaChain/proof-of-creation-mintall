@@ -2,48 +2,58 @@ version: '3.8'
 
 services:
   app:
-    image: node:23.6.0
+    image: mintall-nft-cert-api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    networks:
+      - app-network
     container_name: mintall-nft-cert-api
     working_dir: /app
     volumes:
-      - .:/app
-    command: yarn start:dev
+      - ~/.aws:/root/.aws
     ports:
       - '3000:3000'
     environment:
+      - PORT=3000
       - NODE_ENV=development
-      - DATABASE_HOST=db
+      - DATABASE_HOST=postgres
       - DATABASE_PORT=5432
-      - DATABASE_USER=postgres
-      - DATABASE_PASSWORD=postgres
+      - DATABASE_USER=app
+      - DATABASE_PASSWORD=password
       - DATABASE_NAME=mintall
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-      - JWT_SECRET=your_jwt_secret
-    depends_on:
-      - db
-      - redis
+      - FIXED_JWT_TOKEN=NFT_VERIFICATION_FIXED_TOKEN
+      - AWS_REGION=ap-southeast-1
+      - AWS_SECRET_NAME=prod/mintall-nft-cert-api/private-key
+    # depends_on:
+    #   - db
+    #   - redis
 
-  db:
-    image: postgres:latest
-    container_name: mintall-postgres
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: mintall
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    ports:
-      - '5432:5432'
+networks:
+  app-network:
+    external: true 
 
-  redis:
-    image: redis:7
-    container_name: mintall-redis
-    ports:
-      - '6379:6379'
-    volumes:
-      - redis_data:/data
+  # db:
+  #   image: postgres:latest
+  #   container_name: mintall-postgres
+  #   environment:
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: postgres
+  #     POSTGRES_DB: mintall
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   ports:
+  #     - '5432:5432'
 
-volumes:
-  postgres_data:
-  redis_data:
+  # redis:
+  #   image: redis:7
+  #   container_name: mintall-redis
+  #   ports:
+  #     - '6379:6379'
+  #   volumes:
+  #     - redis_data:/data
+# volumes:
+#   postgres_data:
+#   redis_data:
