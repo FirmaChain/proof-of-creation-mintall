@@ -7,7 +7,7 @@ import { VerificationModule } from './modules/verification/verification.module';
 import { SuccessInterceptor } from './common/interceptors/success.interceptor';
 // import { FirmaModule } from './shared/firma/firma.module';
 import { RedisModule } from './shared/redis/redis.module';
-// import defaultConfig from './config/default.config';
+import defaultConfig from './config/default.config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { entityList } from './modules/entities';
 
@@ -15,6 +15,7 @@ import { entityList } from './modules/entities';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      load: [defaultConfig],
     }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
