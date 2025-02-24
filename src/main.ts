@@ -6,7 +6,7 @@ import helmet from 'helmet';
 import { initConfig } from './config/load.config';
 
 async function bootstrap() {
-  // load aws config
+  // load default config
   await initConfig();
 
   const app = await NestFactory.create(AppModule);

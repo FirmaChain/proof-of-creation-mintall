@@ -5,7 +5,7 @@ import { Repository } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { NFTCertificateEntity } from '../../../modules/entities/nft.certificate.entity';
 import { FirmaService } from '../../../shared/firma/firma.service';
-import { SecretService } from '../../../shared/aws/aws.secret.service';
+import { ConfigService } from '@nestjs/config';
 import { MintRequestDto } from '../dto/mint.request.dto';
 import { BadRequestException } from '@nestjs/common';
 
@@ -14,7 +14,7 @@ describe('MintService', () => {
   let redisService: RedisService;
   let nftCertificateRepository: Repository<NFTCertificateEntity>;
   let firmaService: FirmaService;
-  let secretService: SecretService;
+  let configService: ConfigService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -62,9 +62,9 @@ describe('MintService', () => {
           },
         },
         {
-          provide: SecretService,
+          provide: ConfigService,
           useValue: {
-            getPrivateKey: jest.fn().mockReturnValue('mockPrivateKey'),
+            get: jest.fn().mockReturnValue('mockPrivateKey'),
           },
         },
       ],
@@ -76,7 +76,7 @@ describe('MintService', () => {
       getRepositoryToken(NFTCertificateEntity),
     );
     firmaService = module.get<FirmaService>(FirmaService);
-    secretService = module.get<SecretService>(SecretService);
+    configService = module.get<ConfigService>(ConfigService);
   });
 
   it('should be defined', () => {
