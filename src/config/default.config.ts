@@ -1,3 +1,5 @@
-export const jwtConstants = {
-  token: process.env.FIXED_JWT_TOKEN || 'default_fixed_token',
-};
+import { getDefaultConfig } from './load.config';
+
+export default () => ({
+  ...getDefaultConfig(),
+});

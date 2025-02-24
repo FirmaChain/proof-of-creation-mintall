@@ -8,7 +8,7 @@ import { FirmaService } from '../../../shared/firma/firma.service';
 import { FirmaSDK } from '@firmachain/firma-js';
 import { BroadcastTxResponse } from '@firmachain/firma-js/dist/sdk/firmachain/common/stargateclient';
 import { RowLog } from '../interface/mint.interface';
-import { SecretService } from '../../../shared/aws/aws.secret.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class MintService {
@@ -17,10 +17,10 @@ export class MintService {
 
   constructor(
     private redisService: RedisService,
+    private configService: ConfigService,
     @InjectRepository(NFTCertificateEntity)
     private nftCertificateRepository: Repository<NFTCertificateEntity>,
     private firmaService: FirmaService,
-    private secretService: SecretService,
   ) {
     this.firmaSDK = this.firmaService.getSDK();
   }
@@ -28,7 +28,9 @@ export class MintService {
   async createMint(body: MintRequestDto): Promise<string> {
     try {
       // Get private key from secret manager
-      const privateKey = this.secretService.getPrivateKey() as string;
+      const privateKey = this.configService.get<string>(
+        'PRIVATE_KEY',
+      ) as string;
 
       // token uri (TODO: 환경변수로 변경)
       const tokenUri = 'https://images.app.goo.gl/it644rEhzNcvDXLSA';

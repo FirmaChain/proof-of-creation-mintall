@@ -1,16 +1,19 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
-// import { HttpExceptionFilter } from './common/exception/http.exception.filter';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import helmet from 'helmet';
-// import { AllExceptionsFilter } from './common/exception/all.exception.filter';
+import { initConfig } from './config/load.config';
 
 async function bootstrap() {
+  // load aws config
+  await initConfig();
+
   const app = await NestFactory.create(AppModule);
   const logger = new Logger('NestApplication', {
     timestamp: true,
   });
+
   // app.useGlobalFilters(new AllExceptionsFilter());
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
 
