@@ -6,12 +6,20 @@ import {
 import { KMSClient, DecryptCommand } from '@aws-sdk/client-kms';
 import { ConfigService } from '@nestjs/config';
 
+interface SecretJson {
+  encryptPrivateKey: string;
+  databasePassword: string;
+  fixedJwtToken: string;
+}
+
 @Injectable()
 export class SecretService implements OnModuleInit {
   private logger = new Logger('SecretService');
 
   private privateKey: string | null = null;
   private secretsClient: SecretsManagerClient;
+  private databasePassword: string | null = null;
+  private fixedJwtToken: string | null = null;
   private kmsClient: KMSClient;
   private secretName: string;
 
@@ -54,7 +62,17 @@ export class SecretService implements OnModuleInit {
       if (!response.SecretString) {
         throw new Error('Failed to load private key.');
       }
-      return JSON.parse(response.SecretString).encryptPrivateKey;
+      const secretJson = JSON.parse(response.SecretString) as SecretJson;
+      if (
+        !secretJson.databasePassword ||
+        !secretJson.fixedJwtToken ||
+        !secretJson.encryptPrivateKey
+      ) {
+        throw new Error('Failed to load necessary secrets.');
+      }
+      this.databasePassword = secretJson.databasePassword;
+      this.fixedJwtToken = secretJson.fixedJwtToken;
+      return secretJson.encryptPrivateKey;
     } catch (error) {
       this.logger.error('Error fetching secret:', error);
       throw error;

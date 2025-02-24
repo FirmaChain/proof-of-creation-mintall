@@ -20,11 +20,9 @@ services:
       - DATABASE_HOST=postgres
       - DATABASE_PORT=5432
       - DATABASE_USER=app
-      - DATABASE_PASSWORD=password
       - DATABASE_NAME=mintall
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-      - FIXED_JWT_TOKEN=NFT_VERIFICATION_FIXED_TOKEN
       - AWS_REGION=ap-southeast-1
       - AWS_SECRET_NAME=prod/mintall-nft-cert-api/private-key
     # depends_on:
