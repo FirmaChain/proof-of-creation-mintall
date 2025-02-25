@@ -108,10 +108,15 @@ jobs:
               ENV="development"
             fi
             
-            # Check if docker-compose.yml exists
-            if [ ! -f "docker-compose.yml" ]; then
-              echo "Creating docker-compose.yml file..."
-              cat > docker-compose.yml << EOF
+            # Backup existing docker-compose.yml if it exists
+            if [ -f "docker-compose.yml" ]; then
+              cp docker-compose.yml docker-compose.yml.bak.$(date +%Y%m%d%H%M%S)
+              echo "Backed up existing docker-compose.yml"
+            fi
+            
+            # Create new docker-compose.yml
+            echo "Creating new docker-compose.yml file..."
+            cat > docker-compose.yml << EOF
             version: '3'
             
             services:
@@ -129,11 +134,6 @@ jobs:
                   - DEPLOY_TAG=${DEPLOY_TAG}
                   - NODE_ENV=${ENV}
             EOF
-            else
-              echo "docker-compose.yml already exists. Updating image tag only..."
-              # Update only the image tag in the existing docker-compose.yml
-              sed -i "s|image:.*|image: ${ECR_URI}:${DEPLOY_TAG}|g" docker-compose.yml
-            fi
             
             # If the container exists, stop and remove it
             if docker ps -a --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
