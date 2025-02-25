@@ -1,11 +1,11 @@
 name: Build and Push to AWS ECR
 
 on:
-  # 当有新标签推送时触发
+  # When a new tag is pushed
   push:
     tags:
       - 'v*'
-  # 当 Semantic Release 工作流完成时触发
+  # When the Semantic Release workflow is completed
   workflow_run:
     workflows: ['Semantic Release']
     types:
@@ -16,7 +16,7 @@ on:
 
 jobs:
   build:
-    # 只有当 Semantic Release 成功时才运行
+    # If the workflow is triggered by a tag, it will run
     if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     environment: ${{ startsWith(github.ref, 'refs/tags/v') && !contains(github.ref, '-dev.') && 'production' || 'development' }}
@@ -24,23 +24,19 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0  # 完整克隆，包括所有历史记录和标签
+          fetch-depth: 0
 
       - name: Extract GitHub Tag
         id: tag
         run: |
           if [[ $GITHUB_EVENT_NAME == "workflow_run" ]]; then
-            # 确保获取所有标签
             git fetch --tags
-            # 获取最新标签
             TAG=$(git describe --tags --abbrev=0)
-            echo "最新标签: $TAG"
             echo "IMAGE_TAG=$TAG" >> $GITHUB_ENV
           else
-            # 直接从推送的标签获取
             echo "IMAGE_TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
           fi
-          echo "将使用标签: ${{ env.IMAGE_TAG }}"
+          echo "Will use tag: ${{ env.IMAGE_TAG }}"
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -55,14 +51,14 @@ jobs:
 
       - name: Build and push Docker image
         run: |
-          echo "构建镜像: ${{ env.IMAGE_TAG }}"
+          echo "build image: ${{ env.IMAGE_TAG }}"
           docker build -t ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }} .
           docker push ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
 
       - name: Push latest tag if prod
         if: ${{ !contains(env.IMAGE_TAG, '-dev.') && !contains(env.IMAGE_TAG, '-alpha.') && !contains(env.IMAGE_TAG, '-beta.') }}
         run: |
-          echo "推送生产版本标签: latest"
+          echo "push latest tag: latest"
           docker tag ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }} \
                      ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:latest
           docker push ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:latest
