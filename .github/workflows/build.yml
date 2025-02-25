@@ -52,13 +52,13 @@ jobs:
       - name: Build and push Docker image
         run: |
           echo "build image: ${{ env.IMAGE_TAG }}"
-          docker build -t ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }} .
-          docker push ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+          docker build -t ${{ secrets.ECR_URI }}:${{ env.IMAGE_TAG }} .
+          docker push ${{ secrets.ECR_URI }}:${{ env.IMAGE_TAG }}
 
       - name: Push latest tag if prod
         if: ${{ !contains(env.IMAGE_TAG, '-dev.') && !contains(env.IMAGE_TAG, '-alpha.') && !contains(env.IMAGE_TAG, '-beta.') }}
         run: |
           echo "push latest tag: latest"
-          docker tag ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }} \
-                     ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:latest
-          docker push ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:latest
+          docker tag ${{ secrets.ECR_URI }}:${{ env.IMAGE_TAG }} \
+                     ${{ secrets.ECR_URI }}:latest
+          docker push ${{ secrets.ECR_URI }}:latest
