@@ -13,7 +13,7 @@ services:
       - .env
     working_dir: /app
     volumes:
-      - ~/.aws:/root/.aws
+      - $HOME/.aws:/root/.aws
     ports:
       - '3000:3000'
     environment:

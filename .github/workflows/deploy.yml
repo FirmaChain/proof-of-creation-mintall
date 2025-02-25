@@ -24,6 +24,7 @@ jobs:
       ECR_URI: ${{ secrets.ECR_URI }}
       CONTAINER_NAME: ${{ secrets.CONTAINER_NAME }}
       AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_SECRET_NAME: ${{ secrets.AWS_SECRET_NAME }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -72,7 +73,7 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
-          envs: DEPLOY_TAG,ECR_URI,CONTAINER_NAME,AWS_REGION
+          envs: DEPLOY_TAG,ECR_URI,CONTAINER_NAME,AWS_REGION,AWS_SECRET_NAME
           script: |
             echo "Start to deploy image: ${DEPLOY_TAG}"
             echo "ECR URI: ${ECR_URI}"
@@ -93,6 +94,7 @@ jobs:
             if [ ! -d "$SERVICE_DIR" ]; then
               echo "Creating directory for ${CONTAINER_NAME}..."
               mkdir -p "$SERVICE_DIR"
+              mkdir -p "$SERVICE_DIR/backup"
             else
               echo "Directory for ${CONTAINER_NAME} already exists."
             fi
@@ -133,6 +135,7 @@ jobs:
                 environment:
                   - DEPLOY_TAG=${DEPLOY_TAG}
                   - NODE_ENV=${ENV}
+                  - AWS_SECRET_NAME=${AWS_SECRET_NAME}
                 volumes:
                   - $HOME/.aws:/root/.aws
             EOF
