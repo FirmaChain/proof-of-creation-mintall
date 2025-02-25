@@ -5,10 +5,10 @@ on:
     branches:
       - develop
       - prod
-  workflow_run:
-    workflows: ['Run Tests']
-    types:
-      - completed
+  # workflow_run:
+  #   workflows: ['Run Tests']
+  #   types:
+  #     - completed
 
 jobs:
   release:
@@ -37,7 +37,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 23.6.0
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
