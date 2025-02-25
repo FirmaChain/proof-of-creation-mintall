@@ -15,6 +15,7 @@ import { entityList } from './modules/entities';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      // For load default config. If default config is not exist, it will use .env file.
       load: [defaultConfig],
     }),
     TypeOrmModule.forRootAsync({
