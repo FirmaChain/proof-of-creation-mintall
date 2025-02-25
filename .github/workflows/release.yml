@@ -50,4 +50,4 @@ jobs:
       - name: Run semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release --branches $BRANCH_NAME
+        run: npx semantic-release
