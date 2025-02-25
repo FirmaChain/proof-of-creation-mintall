@@ -79,16 +79,21 @@ jobs:
             # Pull image
             docker pull ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:${{ env.DEPLOY_TAG }}
             
+            # Create service directory
+            SERVICE_DIR="$HOME/${ECR_REPOSITORY}"
+            echo "Service directory: $SERVICE_DIR"
+            
             # Check if the repository directory exists
-            if [ ! -d "~/${ECR_REPOSITORY}" ]; then
+            if [ ! -d "$SERVICE_DIR" ]; then
               echo "Creating directory for ${ECR_REPOSITORY}..."
-              mkdir -p ~/${ECR_REPOSITORY}
+              mkdir -p "$SERVICE_DIR"
             else
               echo "Directory for ${ECR_REPOSITORY} already exists."
             fi
             
             # Enter the directory
-            cd ~/${ECR_REPOSITORY}
+            cd "$SERVICE_DIR"
+            echo "Current directory: $(pwd)"
             
             # Determine environment based on tag
             if [[ "${{ env.DEPLOY_TAG }}" == "latest" ]]; then
