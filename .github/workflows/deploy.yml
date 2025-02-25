@@ -110,7 +110,7 @@ jobs:
             
             # Backup existing docker-compose.yml if it exists
             if [ -f "docker-compose.yml" ]; then
-              cp docker-compose.yml docker-compose.yml.bak.$(date +%Y%m%d%H%M%S)
+              cp docker-compose.yml ./backup/docker-compose.yml.bak.$(date +%Y%m%d%H%M%S)
               echo "Backed up existing docker-compose.yml"
             fi
             
