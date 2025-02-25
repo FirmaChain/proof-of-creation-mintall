@@ -1,3 +1,10 @@
+# [1.0.0-dev.16](https://github.com/FirmaChain/mintall-nft-cert-api/compare/v1.0.0-dev.15...v1.0.0-dev.16) (2025-02-25)
+
+
+### Bug Fixes
+
+* modify deploy ([faf6716](https://github.com/FirmaChain/mintall-nft-cert-api/commit/faf67167fd4152881d907c1b91e4f6dd4f82f3f0))
+
 # [1.0.0-dev.15](https://github.com/FirmaChain/mintall-nft-cert-api/compare/v1.0.0-dev.14...v1.0.0-dev.15) (2025-02-25)
 
 
