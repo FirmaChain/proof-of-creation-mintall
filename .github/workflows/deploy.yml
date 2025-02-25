@@ -79,11 +79,11 @@ jobs:
             docker pull ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:${{ env.DEPLOY_TAG }}
 
             # Stop and remove old container
-            docker stop nestjs-app || true
-            docker rm nestjs-app || true
+            docker stop mintall-service || true
+            docker rm mintall-service || true
 
             # Run new container
-            docker run -d --name nestjs-app -p 3000:3000 \
+            docker run -d --name mintall-service -p 3000:3000 \
               --restart unless-stopped \
               -e NODE_ENV=${{ env.IMAGE_TAG == 'latest' && 'production' || 'development' }} \
               ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:${{ env.DEPLOY_TAG }}
