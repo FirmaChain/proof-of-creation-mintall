@@ -5,7 +5,7 @@
       "prerelease": "dev"
     },
     {
-      "name": "prod"
+      "name": "master"
     }
   ],
   "tagFormat": "v${version}",
