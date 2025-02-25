@@ -68,8 +68,9 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
+          envs: DEPLOY_TAG,ECR_REPOSITORY
           script: |
-            echo "Start to deploy image: ${{ env.DEPLOY_TAG }}"
+            echo "Start to deploy image: ${DEPLOY_TAG}"
             
             # Login to ECR
             aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | \
@@ -78,12 +79,17 @@ jobs:
             # Pull image
             docker pull ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:${{ env.DEPLOY_TAG }}
 
-            # Stop and remove old container
-            docker stop mintall-service || true
-            docker rm mintall-service || true
+            # If container exists, stop and remove it
+            if docker ps -a --format '{{.Names}}' | grep -q "^${ECR_REPOSITORY}$"; then
+              echo "Container exists, stopping and removing..."
+              docker stop ${ECR_REPOSITORY}
+              docker rm ${ECR_REPOSITORY}
+            else
+              echo "Container does not exist, will create new one"
+            fi
 
             # Run new container
-            docker run -d --name mintall-service -p 3000:3000 \
+            docker run -d --name ${ECR_REPOSITORY} -p 3000:3000 \
               --restart unless-stopped \
               -e NODE_ENV=${{ env.IMAGE_TAG == 'latest' && 'production' || 'development' }} \
               ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:${{ env.DEPLOY_TAG }}
