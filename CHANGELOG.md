@@ -1,3 +1,10 @@
+# [1.0.0-dev.6](https://github.com/FirmaChain/mintall-nft-cert-api/compare/v1.0.0-dev.5...v1.0.0-dev.6) (2025-02-25)
+
+
+### Bug Fixes
+
+* change app name ([403c134](https://github.com/FirmaChain/mintall-nft-cert-api/commit/403c134508a5a696355e0be3189174bc1182dba4))
+
 # [1.0.0-dev.5](https://github.com/FirmaChain/mintall-nft-cert-api/compare/v1.0.0-dev.4...v1.0.0-dev.5) (2025-02-25)
 
 
