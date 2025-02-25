@@ -1,3 +1,10 @@
+# [1.0.0-dev.8](https://github.com/FirmaChain/mintall-nft-cert-api/compare/v1.0.0-dev.7...v1.0.0-dev.8) (2025-02-25)
+
+
+### Bug Fixes
+
+* modify deploy use docker-compose ([0e9a31c](https://github.com/FirmaChain/mintall-nft-cert-api/commit/0e9a31c225739614a959dfc920f8e77760d03cd9))
+
 # [1.0.0-dev.7](https://github.com/FirmaChain/mintall-nft-cert-api/compare/v1.0.0-dev.6...v1.0.0-dev.7) (2025-02-25)
 
 
