@@ -10,7 +10,7 @@
       "sourceMaps": true,
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
-      "envFile": "${workspaceFolder}/.envrc"
+      "envFile": "${workspaceFolder}/.env"
     }
   ]
 } 
