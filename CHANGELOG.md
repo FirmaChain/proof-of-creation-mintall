@@ -1,3 +1,10 @@
+# [1.0.0-dev.17](https://github.com/FirmaChain/mintall-nft-cert-api/compare/v1.0.0-dev.16...v1.0.0-dev.17) (2025-02-25)
+
+
+### Bug Fixes
+
+* change image naming ([0885705](https://github.com/FirmaChain/mintall-nft-cert-api/commit/08857052cba0eedb521ba195bbf8a672b746cfce))
+
 # [1.0.0-dev.16](https://github.com/FirmaChain/mintall-nft-cert-api/compare/v1.0.0-dev.15...v1.0.0-dev.16) (2025-02-25)
 
 
