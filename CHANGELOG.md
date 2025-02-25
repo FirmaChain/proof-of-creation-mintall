@@ -1,0 +1,40 @@
+# 1.0.0-dev.1 (2025-02-25)
+
+
+### Bug Fixes
+
+* add new package ([ef7fa2b](https://github.com/FirmaChain/mintall-nft-cert-api/commit/ef7fa2b9b6cac29fcc56a7c4625588bdcefc402b))
+* change branch name ([2f4f13c](https://github.com/FirmaChain/mintall-nft-cert-api/commit/2f4f13c54c9d752ce71b494881e6bed6bb225d4d))
+* change CI ([77771c4](https://github.com/FirmaChain/mintall-nft-cert-api/commit/77771c4862050ba42890dbbec9a0223f4b28cca3))
+* change config ([39f9538](https://github.com/FirmaChain/mintall-nft-cert-api/commit/39f9538deeabc5516cbba4ce350a19fa5c637cc3))
+* change env ([f99b569](https://github.com/FirmaChain/mintall-nft-cert-api/commit/f99b56934d3b4d9a75f0e32c28064b30de11fe8d))
+* change file name ([a626b64](https://github.com/FirmaChain/mintall-nft-cert-api/commit/a626b64abdfcd583543647f5985b213d20fb9683))
+* change node version ([618480e](https://github.com/FirmaChain/mintall-nft-cert-api/commit/618480ee741d6985f58760eca05f198f1cf7b930))
+* change release ([09843de](https://github.com/FirmaChain/mintall-nft-cert-api/commit/09843de33493162651e7af78482a41bb87f7a27f))
+* **config:** Add custom config ([0677078](https://github.com/FirmaChain/mintall-nft-cert-api/commit/0677078402b4f48274bb306219f73f0188d664e6))
+* **config:** Modify config ([a4c01ae](https://github.com/FirmaChain/mintall-nft-cert-api/commit/a4c01aeaa5049c730bf0ebee09e11276da5a342f))
+* **config:** Modify default config ([0a0881a](https://github.com/FirmaChain/mintall-nft-cert-api/commit/0a0881a52474ad12041e38c15b4e80557a91b9e3))
+* debug release ([8785272](https://github.com/FirmaChain/mintall-nft-cert-api/commit/87852723ecb578fe31393572c461e8e0dcc63e80))
+* **mint:** Modify mint test ([135fc7e](https://github.com/FirmaChain/mintall-nft-cert-api/commit/135fc7e7fe65b27438fa3d86f0656f2e71292ca1))
+* **mint:** Modify test ([1e43d86](https://github.com/FirmaChain/mintall-nft-cert-api/commit/1e43d86ee408105e3bbb099245de25aeb65128c1))
+* remove build ([4e741a1](https://github.com/FirmaChain/mintall-nft-cert-api/commit/4e741a1405a40e0d0381d1caf31a3a532784e338))
+* remove command ([b11791b](https://github.com/FirmaChain/mintall-nft-cert-api/commit/b11791bc61e55fb819e2b6e7d8d7082af240c51e))
+* remove release config param ([5bc1e11](https://github.com/FirmaChain/mintall-nft-cert-api/commit/5bc1e11891c5b4101091a2f474bae21c810f8025))
+* remove test workflow in release ([db04818](https://github.com/FirmaChain/mintall-nft-cert-api/commit/db04818ed8a7a076695623e8c0527db5905b8100))
+* test release ([3db772e](https://github.com/FirmaChain/mintall-nft-cert-api/commit/3db772eaa0ef8dae8eb599e6c3dd619fa6b362df))
+* **test:** Modify test code ([d8dc2d1](https://github.com/FirmaChain/mintall-nft-cert-api/commit/d8dc2d167b5262569d474d2baeebb5272827dbb9))
+* **verification:** Modify test & README ([ead1040](https://github.com/FirmaChain/mintall-nft-cert-api/commit/ead1040bf50b7eb893893000f4c670efd8ae2966))
+
+
+### Features
+
+* Add aws secret ([d42c22e](https://github.com/FirmaChain/mintall-nft-cert-api/commit/d42c22e036bc765530f8343011beb51370b357ce))
+* Add CICD ([eb9fb1f](https://github.com/FirmaChain/mintall-nft-cert-api/commit/eb9fb1f6b3cf2c6967a1414ca6ee95f68ed2113c))
+* Add mint api and modify log ([8aa36df](https://github.com/FirmaChain/mintall-nft-cert-api/commit/8aa36df3c1c2fde6994dfdaf11d43716ec376004))
+* **env:** Prepare for new deploy process ([c57b1b0](https://github.com/FirmaChain/mintall-nft-cert-api/commit/c57b1b02b8c825b493d8468034a926e5132857ef))
+* **mint:** add commit ([0c84fdd](https://github.com/FirmaChain/mintall-nft-cert-api/commit/0c84fddff775b8b357d50a396e4000834be76d8a))
+* **mint:** Modify mint process ([f89ad8d](https://github.com/FirmaChain/mintall-nft-cert-api/commit/f89ad8d6cdba83608be70ae2c78bd99cd01986e1))
+* Modify env params ([e7d4616](https://github.com/FirmaChain/mintall-nft-cert-api/commit/e7d4616f60a50aad2d44726971d4a25e508c06e2))
+* **test:** Add test and CI ([7e2ad1a](https://github.com/FirmaChain/mintall-nft-cert-api/commit/7e2ad1a81278acb23932331f629bbb2f31db3d8a))
+* Use docker ([d597778](https://github.com/FirmaChain/mintall-nft-cert-api/commit/d5977783cf1fe0327fd78711e17a454a24b72ae0))
+* **verification:** Completed verification API and Optimize module structure ([1cdea0e](https://github.com/FirmaChain/mintall-nft-cert-api/commit/1cdea0e5e3da0fe57a955fdb2d3d0ce00bb79407))
