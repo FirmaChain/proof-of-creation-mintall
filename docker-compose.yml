@@ -9,6 +9,8 @@ services:
     networks:
       - app-network
     container_name: mintall-nft-cert-api
+    env_file:
+      - .env
     working_dir: /app
     volumes:
       - ~/.aws:/root/.aws
@@ -17,14 +19,14 @@ services:
     environment:
       - PORT=3000
       - NODE_ENV=development
-      - DATABASE_HOST=postgres
-      - DATABASE_PORT=5432
-      - DATABASE_USER=app
-      - DATABASE_NAME=mintall
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - AWS_REGION=ap-southeast-1
-      - AWS_SECRET_NAME=prod/mintall-nft-cert-api/private-key
+      # - DATABASE_HOST=postgres
+      # - DATABASE_PORT=5432
+      # - DATABASE_USER=app
+      # - DATABASE_NAME=mintall
+      # - REDIS_HOST=redis
+      # - REDIS_PORT=6379
+      # - AWS_REGION=ap-southeast-1
+      # - AWS_SECRET_NAME=prod/mintall-nft-cert-api/private-key
     # depends_on:
     #   - db
     #   - redis

@@ -133,6 +133,8 @@ jobs:
                 environment:
                   - DEPLOY_TAG=${DEPLOY_TAG}
                   - NODE_ENV=${ENV}
+                volumes:
+                  - ~/.aws:root/.aws
             EOF
             
             # If the container exists, stop and remove it
