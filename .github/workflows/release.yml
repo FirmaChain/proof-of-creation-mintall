@@ -20,7 +20,12 @@ jobs:
           fetch-depth: 0
 
       - name: Set branch name (Fix for workflow_run)
-        run: echo "BRANCH_NAME=${GITHUB_BASE_REF:-develop}" >> $GITHUB_ENV
+        run: |
+          if [[ -n "${GITHUB_BASE_REF}" ]]; then
+            echo "BRANCH_NAME=${GITHUB_BASE_REF}" >> $GITHUB_ENV
+          else
+            echo "BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+          fi
 
       - name: Debug GitHub Actions Variables
         run: |
@@ -32,10 +37,15 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 23.6.0
+          node-version: 18
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
+
+      - name: Checkout correct branch
+        run: |
+          git fetch --no-tags --depth=1 origin $BRANCH_NAME
+          git checkout $BRANCH_NAME
 
       - name: Run semantic-release
         env:
