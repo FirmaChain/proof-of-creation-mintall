@@ -1,3 +1,10 @@
+# [1.0.0-dev.2](https://github.com/FirmaChain/mintall-nft-cert-api/compare/v1.0.0-dev.1...v1.0.0-dev.2) (2025-02-25)
+
+
+### Features
+
+* Add build ([c714d2e](https://github.com/FirmaChain/mintall-nft-cert-api/commit/c714d2e456ac75ae57cc54c2e98e716b468d08b5))
+
 # 1.0.0-dev.1 (2025-02-25)
 
 
