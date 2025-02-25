@@ -5,10 +5,6 @@ on:
     branches:
       - develop
       - prod
-  # workflow_run:
-  #   workflows: ['Run Tests']
-  #   types:
-  #     - completed
 
 jobs:
   release:
@@ -19,20 +15,21 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set branch name (Fix for workflow_run)
+      - name: Set branch name
         run: |
-          if [[ -n "${GITHUB_BASE_REF}" ]]; then
-            echo "BRANCH_NAME=${GITHUB_BASE_REF}" >> $GITHUB_ENV
-          else
-            echo "BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
-          fi
+          echo "BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
 
       - name: Debug GitHub Actions Variables
         run: |
           echo "GITHUB_REF: $GITHUB_REF"
           echo "GITHUB_REF_NAME: $GITHUB_REF_NAME"
-          echo "GITHUB_BASE_REF: $GITHUB_BASE_REF"
           echo "BRANCH_NAME: $BRANCH_NAME"
+
+      - name: Checkout correct branch
+        run: |
+          git fetch --no-tags --depth=1 origin $BRANCH_NAME
+          git checkout $BRANCH_NAME
+          git branch --show-current
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
@@ -42,12 +39,10 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Checkout correct branch
-        run: |
-          git fetch --no-tags --depth=1 origin $BRANCH_NAME
-          git checkout $BRANCH_NAME
+      - name: Check config file
+        run: cat .releaserc
 
       - name: Run semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release
+        run: npx semantic-release --debug
