@@ -79,7 +79,7 @@ jobs:
             # Pull image
             docker pull ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:${{ env.DEPLOY_TAG }}
             
-            # 正确创建服务目录
+            # Create service directory
             SERVICE_DIR="$HOME/${ECR_REPOSITORY}"
             echo "Service directory: $SERVICE_DIR"
             
