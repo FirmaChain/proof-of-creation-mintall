@@ -78,20 +78,62 @@ jobs:
 
             # Pull image
             docker pull ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:${{ env.DEPLOY_TAG }}
-
-            # If container exists, stop and remove it
+            
+            # Check if the repository directory exists
+            if [ ! -d "~/${ECR_REPOSITORY}" ]; then
+              echo "Creating directory for ${ECR_REPOSITORY}..."
+              mkdir -p ~/${ECR_REPOSITORY}
+            else
+              echo "Directory for ${ECR_REPOSITORY} already exists."
+            fi
+            
+            # Enter the directory
+            cd ~/${ECR_REPOSITORY}
+            
+            # Determine environment based on tag
+            if [[ "${{ env.DEPLOY_TAG }}" == "latest" ]]; then
+              ENV="production"
+            else
+              ENV="development"
+            fi
+            
+            # Check if docker-compose.yml exists
+            if [ ! -f "docker-compose.yml" ]; then
+              echo "Creating docker-compose.yml file..."
+              cat > docker-compose.yml << EOF
+            version: '3'
+            
+            services:
+              app:
+                image: ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:${{ env.DEPLOY_TAG }}
+                container_name: ${ECR_REPOSITORY}
+                restart: unless-stopped
+                ports:
+                  - "3000:3000"
+                # Use env_file to load variables from .env file
+                env_file:
+                  - .env
+                # You can also specify additional environment variables directly
+                environment:
+                  - DEPLOY_TAG=${DEPLOY_TAG}
+                  - NODE_ENV=${ENV}
+            EOF
+            else
+              echo "docker-compose.yml already exists. Updating image tag only..."
+              # Update only the image tag in the existing docker-compose.yml
+              sed -i "s|image:.*|image: ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:${{ env.DEPLOY_TAG }}|g" docker-compose.yml
+            fi
+            
+            # If the container exists, stop and remove it
             if docker ps -a --format '{{.Names}}' | grep -q "^${ECR_REPOSITORY}$"; then
-              echo "Container exists, stopping and removing..."
-              docker stop ${ECR_REPOSITORY}
-              docker rm ${ECR_REPOSITORY}
+              echo "Container exists, stopping..."
+              docker-compose down
             else
               echo "Container does not exist, will create new one"
             fi
-
-            # Run new container
-            docker run -d --name ${ECR_REPOSITORY} -p 3000:3000 \
-              --restart unless-stopped \
-              -e NODE_ENV=${{ env.IMAGE_TAG == 'latest' && 'production' || 'development' }} \
-              ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:${{ env.DEPLOY_TAG }}
+            
+            # Use Docker Compose to start the container
+            echo "Starting container with Docker Compose..."
+            docker-compose up -d
             
             echo "Deploy completed"
