@@ -1,3 +1,10 @@
+# [1.0.0-dev.5](https://github.com/FirmaChain/mintall-nft-cert-api/compare/v1.0.0-dev.4...v1.0.0-dev.5) (2025-02-25)
+
+
+### Features
+
+* Add deploy yml ([1a8fa07](https://github.com/FirmaChain/mintall-nft-cert-api/commit/1a8fa0758f50bdf605093f31649e768e5e4384bb))
+
 # [1.0.0-dev.4](https://github.com/FirmaChain/mintall-nft-cert-api/compare/v1.0.0-dev.3...v1.0.0-dev.4) (2025-02-25)
 
 
