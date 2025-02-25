@@ -8,7 +8,7 @@
       "name": "prod"
     }
   ],
-  "tagFormat": "${branch}_${version}",
+  "tagFormat": "${name}_${version}",
   "plugins": [
     "@semantic-release/commit-analyzer",
     "@semantic-release/release-notes-generator",
