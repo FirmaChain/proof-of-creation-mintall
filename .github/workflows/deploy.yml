@@ -68,27 +68,29 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
-          envs: DEPLOY_TAG,ECR_REPOSITORY
+          envs: DEPLOY_TAG,ECR_URI,CONTAINER_NAME
           script: |
             echo "Start to deploy image: ${DEPLOY_TAG}"
+            echo "ECR URI: ${ECR_URI}"
+            echo "Container name: ${CONTAINER_NAME}"
             
             # Login to ECR
             aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | \
-            docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}
+            docker login --username AWS --password-stdin $(echo ${ECR_URI} | cut -d/ -f1)
 
             # Pull image
-            docker pull ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:${{ env.DEPLOY_TAG }}
+            docker pull ${ECR_URI}:${DEPLOY_TAG}
             
             # Create service directory
-            SERVICE_DIR="$HOME/${ECR_REPOSITORY}"
+            SERVICE_DIR="$HOME/${CONTAINER_NAME}"
             echo "Service directory: $SERVICE_DIR"
             
             # Check if the repository directory exists
             if [ ! -d "$SERVICE_DIR" ]; then
-              echo "Creating directory for ${ECR_REPOSITORY}..."
+              echo "Creating directory for ${CONTAINER_NAME}..."
               mkdir -p "$SERVICE_DIR"
             else
-              echo "Directory for ${ECR_REPOSITORY} already exists."
+              echo "Directory for ${CONTAINER_NAME} already exists."
             fi
             
             # Enter the directory
@@ -96,7 +98,7 @@ jobs:
             echo "Current directory: $(pwd)"
             
             # Determine environment based on tag
-            if [[ "${{ env.DEPLOY_TAG }}" == "latest" ]]; then
+            if [[ "${DEPLOY_TAG}" == "latest" ]]; then
               ENV="production"
             else
               ENV="development"
@@ -110,8 +112,8 @@ jobs:
             
             services:
               app:
-                image: ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:${{ env.DEPLOY_TAG }}
-                container_name: ${ECR_REPOSITORY}
+                image: ${ECR_URI}:${DEPLOY_TAG}
+                container_name: ${CONTAINER_NAME}
                 restart: unless-stopped
                 ports:
                   - "3000:3000"
@@ -126,11 +128,11 @@ jobs:
             else
               echo "docker-compose.yml already exists. Updating image tag only..."
               # Update only the image tag in the existing docker-compose.yml
-              sed -i "s|image:.*|image: ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:${{ env.DEPLOY_TAG }}|g" docker-compose.yml
+              sed -i "s|image:.*|image: ${ECR_URI}:${DEPLOY_TAG}|g" docker-compose.yml
             fi
             
             # If the container exists, stop and remove it
-            if docker ps -a --format '{{.Names}}' | grep -q "^${ECR_REPOSITORY}$"; then
+            if docker ps -a --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
               echo "Container exists, stopping..."
               docker-compose down
             else
