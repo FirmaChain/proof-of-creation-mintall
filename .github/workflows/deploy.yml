@@ -86,34 +86,32 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           envs: DEPLOY_TAG,ECR_URI,REPO_NAME,AWS_REGION,AWS_SECRET_NAME
           script: |
-            echo "Start to deploy image: ${DEPLOY_TAG}"
-            echo "ECR URI: ${ECR_URI}"
-            echo "Repository name: ${REPO_NAME}"
+            set -e
+            echo "=== DEPLOYMENT STARTED ==="
+            echo "Image: ${DEPLOY_TAG}"
             
             # Login to ECR
+            echo "Logging into ECR..."
             aws ecr get-login-password --region ${AWS_REGION} | \
-            docker login --username AWS --password-stdin $(echo ${ECR_URI} | cut -d/ -f1)
-
+            docker login --username AWS --password-stdin $(echo ${ECR_URI} | cut -d/ -f1) > /dev/null 2>&1
+            
             # Pull image
+            echo "Pulling image..."
             docker pull ${ECR_URI}:${DEPLOY_TAG}
             
             # Create service directory
             SERVICE_DIR="$HOME/${REPO_NAME}"
-            echo "Service directory: $SERVICE_DIR"
-            
-            # Check if the repository directory exists
+            echo "Setting up service directory: ${REPO_NAME}"
             if [ ! -d "$SERVICE_DIR" ]; then
-              echo "Creating directory for ${REPO_NAME}..."
-              mkdir -p "$SERVICE_DIR"
               mkdir -p "$SERVICE_DIR/backup"
               touch "$SERVICE_DIR/.env"
+              echo "✓ Created new service directory"
             else
-              echo "Directory for ${REPO_NAME} already exists."
+              echo "✓ Using existing service directory"
             fi
             
             # Enter the directory
             cd "$SERVICE_DIR"
-            echo "Current directory: $(pwd)"
             
             # Determine environment based on tag
             if [[ "${DEPLOY_TAG}" == *".latest" ]]; then
@@ -121,17 +119,18 @@ jobs:
             else
               ENV="development"
             fi
+            echo "Environment: ${ENV}"
             
             # Backup existing docker-compose.yml if it exists
             if [ -f "docker-compose.yml" ]; then
               cp docker-compose.yml ./backup/docker-compose.yml.bak.$(date +%Y%m%d%H%M%S)
-              echo "Backed up existing docker-compose.yml"
+              echo "✓ Backed up existing configuration"
             fi
             
             # Create new docker-compose.yml
-            echo "Creating new docker-compose.yml file..."
+            echo "Creating docker-compose configuration..."
             cat > docker-compose.yml << EOF
-            version: '3'
+            version: '3.8'
             
             services:
               app:
@@ -140,10 +139,8 @@ jobs:
                 restart: unless-stopped
                 ports:
                   - "3000:3000"
-                # Use env_file to load variables from .env file
                 env_file:
                   - .env
-                # You can also specify additional environment variables directly
                 environment:
                   - DEPLOY_TAG=${DEPLOY_TAG}
                   - NODE_ENV=${ENV}
@@ -152,16 +149,48 @@ jobs:
                   - $HOME/.aws:/root/.aws
             EOF
             
-            # If the container exists, stop and remove it
+            # Container management
             if docker ps -a --format '{{.Names}}' | grep -q "^${REPO_NAME}$"; then
-              echo "Container exists, stopping..."
+              echo "Stopping existing container..."
               docker-compose down
+              echo "✓ Existing container stopped"
             else
-              echo "Container does not exist, will create new one"
+              echo "✓ No existing container found"
             fi
             
-            # Use Docker Compose to start the container
-            echo "Starting container with Docker Compose..."
+            # Start container
+            echo "Starting container..."
             docker-compose up -d
+            echo "✓ Container started successfully"
             
-            echo "Deploy completed"
+            # Clean up old images
+            echo "=== STARTING IMAGE CLEANUP ==="
+            
+            # Set number of images to keep
+            KEEP=4
+            
+            # Get all development version images for current service
+            echo "Finding development images for ${REPO_NAME}..."
+            DEV_IMAGES=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep "${REPO_NAME}" | grep "\-dev\.")
+            DEV_COUNT=$(echo "$DEV_IMAGES" | grep -v "^$" | wc -l)
+            
+            if [ $DEV_COUNT -gt $KEEP ]; then
+              # Calculate how many images to delete
+              TO_DELETE=$((DEV_COUNT - KEEP))
+              echo "Found $DEV_COUNT development images, will delete oldest $TO_DELETE"
+              
+              # Get list of images to delete (sorted by version, delete oldest)
+              IMAGES_TO_DELETE=$(echo "$DEV_IMAGES" | sort -V | head -n $TO_DELETE)
+              
+              # Delete images
+              for IMAGE in $IMAGES_TO_DELETE; do
+                echo "Deleting image: $IMAGE"
+                docker rmi $IMAGE || echo "Warning: Could not delete $IMAGE, it may be in use"
+              done
+              
+              echo "Deleted $TO_DELETE old images"
+            else
+              echo "Only $DEV_COUNT development images found, no cleanup needed"
+            fi
+            
+            echo "=== DEPLOYMENT COMPLETED ==="
