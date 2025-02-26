@@ -1,100 +1,45 @@
-name: Auto Versioning & Release
+name: Semantic Release
 
 on:
   push:
     branches:
       - develop
       - master
-      - 'hotfix/*'
 
 jobs:
   release:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0 # Get all history and tags
+          fetch-depth: 0
+          persist-credentials: true
 
-      - name: Fetch all tags
+      - name: Set branch name
         run: |
-          git config remote.origin.fetch "+refs/tags/*:refs/tags/*"
-          git fetch --prune --tags
+          echo "BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
 
-      - name: Debug Tag List
+      - name: Configure Git
         run: |
-          echo "==== Available Tags ===="
-          git tag --list --sort=-v:refname | head -n 10
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
 
-      - name: Get latest stable tag (ignore -dev.X)
-        id: latest-tag
+      - name: Checkout correct branch
         run: |
-          # Get the latest stable tag (ignore -dev.X)
-          LATEST_TAG=$(git tag --list "v[0-9]*.[0-9]*.[0-9]" --sort=-v:refname | head -n 1)
+          git checkout $BRANCH_NAME
+          git branch --show-current
 
-          # If there is no tag, initialize v0.0.0
-          if [[ -z "$LATEST_TAG" ]]; then
-            LATEST_TAG="v0.0.0"
-          fi
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 23.6.0
 
-          echo "Latest stable tag: $LATEST_TAG"
-          echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_ENV
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
 
-      - name: Determine version bump (major, minor, patch)
-        id: version-bump
-        run: |
-          COMMIT_MSG=$(git log -1 --pretty=%B)
-
-          # Extract base version number
-          BASE_VERSION=$(echo $LATEST_TAG | sed -E 's/v([0-9]+\.[0-9]+\.[0-9]+)/\1/')
-          MAJOR=$(echo $BASE_VERSION | cut -d. -f1)
-          MINOR=$(echo $BASE_VERSION | cut -d. -f2)
-          PATCH=$(echo $BASE_VERSION | cut -d. -f3)
-
-          # Parse commit message to determine version increment logic
-          if echo "$COMMIT_MSG" | grep -qiE "^major:"; then
-            MAJOR=$((MAJOR + 1))
-            MINOR=0
-            PATCH=0
-          elif echo "$COMMIT_MSG" | grep -qiE "^feat:"; then
-            MINOR=$((MINOR + 1))
-            PATCH=0
-          elif echo "$COMMIT_MSG" | grep -qiE "^fix:"; then
-            PATCH=$((PATCH + 1))
-          fi
-
-          # develop still uses the latest stable version, no patch increment
-          NEW_VERSION="v${MAJOR}.${MINOR}.${PATCH}"
-          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
-          echo "New version: $NEW_VERSION"
-
-      - name: Generate new tag
-        id: new-tag
-        run: |
-          # develop branch: create vX.X.X-dev.1 increment
-          if [[ "${GITHUB_REF}" == "refs/heads/develop" ]]; then
-            DEV_COUNT=$(git tag --list "${NEW_VERSION}-dev.*" | grep -Eo '[0-9]+$' | sort -n | tail -n 1)
-            if [[ -z "$DEV_COUNT" ]]; then
-              DEV_COUNT=0
-            fi
-            NEW_TAG="${NEW_VERSION}-dev.$((DEV_COUNT + 1))"
-          else
-            NEW_TAG="${NEW_VERSION}"
-          fi
-
-          echo "NEW_TAG=$NEW_TAG" >> $GITHUB_ENV
-          echo "Generated tag: $NEW_TAG"
-
-      - name: Create and push new tag
-        run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-
-          if [[ -z "${{ env.NEW_TAG }}" ]]; then
-            echo "No new tag generated, skipping push."
-            exit 1
-          fi
-
-          git tag ${{ env.NEW_TAG }}
-          git push origin ${{ env.NEW_TAG }} || (echo "Tag push failed, checking if it already exists..." && git fetch --tags && git tag -l | grep -q "^${{ env.NEW_TAG }}$" && echo "Tag already exists, skipping push" || exit 1)
+      - name: Run semantic-release with debug
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEBUG: semantic-release:*
+        run: npx semantic-release --debug
