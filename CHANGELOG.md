@@ -1,3 +1,10 @@
+# [1.0.0-dev.18](https://github.com/FirmaChain/mintall-nft-cert-api/compare/v1.0.0-dev.17...v1.0.0-dev.18) (2025-02-26)
+
+
+### Bug Fixes
+
+* modify CICD ([c45c59f](https://github.com/FirmaChain/mintall-nft-cert-api/commit/c45c59f980b9faff1f7d05ba590c90ab8f0fe24a))
+
 # [1.0.0-dev.17](https://github.com/FirmaChain/mintall-nft-cert-api/compare/v1.0.0-dev.16...v1.0.0-dev.17) (2025-02-25)
 
 
