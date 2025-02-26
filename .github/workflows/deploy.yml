@@ -22,7 +22,6 @@ jobs:
     environment: ${{ startsWith(github.ref, 'refs/tags/v') && !contains(github.ref, '-dev.') && 'production' || 'development' }}
     env:
       ECR_URI: ${{ secrets.ECR_URI }}
-      CONTAINER_NAME: ${{ secrets.CONTAINER_NAME }}
       AWS_REGION: ${{ secrets.AWS_REGION }}
       AWS_SECRET_NAME: ${{ secrets.AWS_SECRET_NAME }}
     steps:
@@ -30,6 +29,13 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
+
+      - name: Get repository name
+        id: repo-name
+        run: |
+          REPO_NAME=$(echo "$GITHUB_REPOSITORY" | cut -d '/' -f 2)
+          echo "REPO_NAME=$REPO_NAME" >> $GITHUB_ENV
+          echo "Repository name: $REPO_NAME"
 
       - name: Extract GitHub Tag
         id: tag
@@ -47,9 +53,9 @@ jobs:
           fi
           echo "Will use GitHub tag: ${{ env.GITHUB_TAG }}"
           
-      - name: Create custom image tag with service name
+      - name: Create custom image tag with repo name
         run: |
-          echo "IMAGE_TAG=${{ env.CONTAINER_NAME }}.${{ env.GITHUB_TAG }}" >> $GITHUB_ENV
+          echo "IMAGE_TAG=${{ env.REPO_NAME }}.${{ env.GITHUB_TAG }}" >> $GITHUB_ENV
           echo "Will use image tag: ${{ env.IMAGE_TAG }}"
 
       - name: Configure AWS credentials
@@ -64,7 +70,7 @@ jobs:
         run: |
           # If the environment is production and does not contain a development marker, use the latest tag
           if [[ "${{ env.GITHUB_TAG }}" != *-dev.* && "${{ env.GITHUB_TAG }}" != *-alpha.* && "${{ env.GITHUB_TAG }}" != *-beta.* ]]; then
-            DEPLOY_TAG="${{ env.CONTAINER_NAME }}.latest"
+            DEPLOY_TAG="${{ env.REPO_NAME }}.latest"
             echo "Deploy production version, use tag: $DEPLOY_TAG"
           else
             DEPLOY_TAG="${{ env.IMAGE_TAG }}"
@@ -78,30 +84,30 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
-          envs: DEPLOY_TAG,ECR_URI,CONTAINER_NAME,AWS_REGION,AWS_SECRET_NAME
+          envs: DEPLOY_TAG,ECR_URI,REPO_NAME,AWS_REGION,AWS_SECRET_NAME
           script: |
             echo "Start to deploy image: ${DEPLOY_TAG}"
             echo "ECR URI: ${ECR_URI}"
-            echo "Container name: ${CONTAINER_NAME}"
+            echo "Repository name: ${REPO_NAME}"
             
             # Login to ECR
-            aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | \
+            aws ecr get-login-password --region ${AWS_REGION} | \
             docker login --username AWS --password-stdin $(echo ${ECR_URI} | cut -d/ -f1)
 
             # Pull image
             docker pull ${ECR_URI}:${DEPLOY_TAG}
             
             # Create service directory
-            SERVICE_DIR="$HOME/${CONTAINER_NAME}"
+            SERVICE_DIR="$HOME/${REPO_NAME}"
             echo "Service directory: $SERVICE_DIR"
             
             # Check if the repository directory exists
             if [ ! -d "$SERVICE_DIR" ]; then
-              echo "Creating directory for ${CONTAINER_NAME}..."
+              echo "Creating directory for ${REPO_NAME}..."
               mkdir -p "$SERVICE_DIR"
               mkdir -p "$SERVICE_DIR/backup"
             else
-              echo "Directory for ${CONTAINER_NAME} already exists."
+              echo "Directory for ${REPO_NAME} already exists."
             fi
             
             # Enter the directory
@@ -129,7 +135,7 @@ jobs:
             services:
               app:
                 image: ${ECR_URI}:${DEPLOY_TAG}
-                container_name: ${CONTAINER_NAME}
+                container_name: ${REPO_NAME}
                 restart: unless-stopped
                 ports:
                   - "3000:3000"
@@ -146,7 +152,7 @@ jobs:
             EOF
             
             # If the container exists, stop and remove it
-            if docker ps -a --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
+            if docker ps -a --format '{{.Names}}' | grep -q "^${REPO_NAME}$"; then
               echo "Container exists, stopping..."
               docker-compose down
             else
