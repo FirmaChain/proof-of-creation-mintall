@@ -18,7 +18,7 @@
 
 ### Local Environment
 
-Create a `.envrc` file in the root directory of the project and add the following environment variables:
+Create a `.env` file in the root directory of the project and add the following environment variables:
 
 ```plaintext
 # Database Configuration
