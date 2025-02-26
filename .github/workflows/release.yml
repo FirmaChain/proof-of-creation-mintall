@@ -21,7 +21,7 @@ jobs:
 
       - name: Checkout correct branch
         run: |
-          git fetch --no-tags --depth=1 origin $BRANCH_NAME
+          git fetch --tags --force origin $BRANCH_NAME
           git checkout $BRANCH_NAME
           git branch --show-current
 
