@@ -120,17 +120,15 @@ jobs:
             fi
             echo "Environment: ${ENV}"
             
-            # Backup existing docker compose.yml if it exists
-            if [ -f "docker compose.yml" ]; then
-              cp docker compose.yml ./backup/docker compose.yml.bak.$(date +%Y%m%d%H%M%S)
+            # Backup existing docker-compose.yml if it exists
+            if [ -f "docker-compose.yml" ]; then
+              cp docker-compose.yml ./backup/docker-compose.yml.bak.$(date +%Y%m%d%H%M%S)
               echo "✓ Backed up existing configuration"
             fi
             
-            # Create new docker compose.yml
-            echo "Creating docker compose configuration..."
-            cat > docker compose.yml << EOF
-            version: '3.8'
-            
+            # Create new docker-compose.yml
+            echo "Creating docker-compose configuration..."
+            cat > docker-compose.yml << EOF
             services:
               app:
                 image: ${ECR_URI}:${DEPLOY_TAG}
