@@ -14,10 +14,10 @@ on:
 jobs:
   deploy:
     # Only run when a new tag is pushed or develop branch is pushed or the Build workflow is completed
-    if: github.event_name == 'push' || 
+    if: (github.event_name == 'push' && contains(github.ref, '-dev.')) || 
         (github.event_name == 'workflow_run' && 
-         github.event.workflow_run.conclusion == 'success' &&
-         github.event.workflow_run.head_branch == 'develop')
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.head_branch == 'develop')
     runs-on: ubuntu-latest
     environment: ${{ startsWith(github.ref, 'refs/tags/v') && !contains(github.ref, '-dev.') && 'production' || 'development' }}
     env:
