@@ -132,10 +132,11 @@ src/
   │   ├── dto/
   │   └── utils/
   ├── shared/
-  │   ├── database/
   │   ├── redis/
   │   └── firma/
-  └── config/
+  ├── config/
+  │   ├── redis.config
+  └── └── load.config
 ```
 
 ## Contributing
