@@ -15,8 +15,13 @@ on:
 
 jobs:
   deploy:
-    # if the Build workflow is completed
-    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+    # If the workflow is triggered by a tag, it will run
+    if: >
+      ${{ 
+        github.event_name != 'workflow_run' || 
+        (github.event.workflow_run.conclusion == 'success' && 
+         github.event.workflow_run.head_branch == 'develop')
+      }}
     runs-on: ubuntu-latest
     environment: ${{ startsWith(github.ref, 'refs/tags/v') && !contains(github.ref, '-dev.') && 'production' || 'development' }}
     env:
