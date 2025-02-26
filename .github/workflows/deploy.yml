@@ -11,7 +11,6 @@ on:
     types:
       - completed
     branches:
-      - master
       - develop
 
 jobs:
@@ -177,7 +176,11 @@ jobs:
               echo "Found $DEV_COUNT development images, will delete oldest $TO_DELETE"
               
               # Get list of images to delete (sorted by version, delete oldest)
-              IMAGES_TO_DELETE=$(echo "$DEV_IMAGES" | sort -V | head -n $TO_DELETE)
+              IMAGES_TO_DELETE=$(echo "$DEV_IMAGES" | sort -t. -k4,4n | head -n $TO_DELETE)
+              
+              # Print images to delete for debugging
+              echo "Images to delete:"
+              echo "$IMAGES_TO_DELETE"
               
               # Delete images
               for IMAGE in $IMAGES_TO_DELETE; do
@@ -189,5 +192,9 @@ jobs:
             else
               echo "Only $DEV_COUNT development images found, no cleanup needed"
             fi
+            
+            # Print remaining images for verification
+            echo "Remaining images:"
+            docker images --format "{{.Repository}}:{{.Tag}}" | grep "${REPO_NAME}" | grep "\-dev\."
             
             echo "=== DEPLOYMENT COMPLETED ==="
