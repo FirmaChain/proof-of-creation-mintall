@@ -15,7 +15,7 @@ on:
 
 jobs:
   deploy:
-    # 添加条件：如果是 workflow_run 触发，则检查触发原始工作流的分支
+    # If the workflow is triggered by a tag, it will run
     if: >
       ${{ 
         github.event_name != 'workflow_run' || 
