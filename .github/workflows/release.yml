@@ -5,7 +5,7 @@ on:
     branches:
       - develop
       - master
-      - 'hotfix/*' # Allow hotfix branches to trigger
+      - 'hotfix/*'
 
 jobs:
   release:
@@ -15,7 +15,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0 # Ensure all history and tags are available
+          fetch-depth: 0 # Get all history and tags
 
       - name: Fetch all tags
         run: |
@@ -27,23 +27,19 @@ jobs:
           echo "==== Available Tags ===="
           git tag --list --sort=-v:refname | head -n 10
 
-      - name: Get latest tag
+      - name: Get latest stable tag (ignore -dev.X)
         id: latest-tag
         run: |
-          # Get repository name
-          REPO_NAME=$(basename $GITHUB_REPOSITORY)
-
-          # Get the latest vX.X.X or vX.X.X-dev.X version
-          LATEST_TAG=$(git tag --list "v[0-9]*.[0-9]*.[0-9]*" --sort=-v:refname | head -n 1)
+          # Get the latest stable tag (ignore -dev.X)
+          LATEST_TAG=$(git tag --list "v[0-9]*.[0-9]*.[0-9]" --sort=-v:refname | head -n 1)
 
           # If there is no tag, initialize v0.0.0
           if [[ -z "$LATEST_TAG" ]]; then
             LATEST_TAG="v0.0.0"
           fi
 
-          echo "Latest tag: $LATEST_TAG"
+          echo "Latest stable tag: $LATEST_TAG"
           echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_ENV
-          echo "REPO_NAME=$REPO_NAME" >> $GITHUB_ENV
 
       - name: Determine version bump (major, minor, patch)
         id: version-bump
@@ -51,16 +47,13 @@ jobs:
           COMMIT_MSG=$(git log -1 --pretty=%B)
 
           # Extract base version number
-          BASE_VERSION=$(echo $LATEST_TAG | sed -E 's/v([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
+          BASE_VERSION=$(echo $LATEST_TAG | sed -E 's/v([0-9]+\.[0-9]+\.[0-9]+)/\1/')
           MAJOR=$(echo $BASE_VERSION | cut -d. -f1)
           MINOR=$(echo $BASE_VERSION | cut -d. -f2)
           PATCH=$(echo $BASE_VERSION | cut -d. -f3)
 
-          # Version increment logic
-          if [[ "${GITHUB_REF}" == refs/heads/hotfix/* ]]; then
-            PATCH=$((PATCH + 1))
-            echo "Hotfix detected, forcing patch bump."
-          elif echo "$COMMIT_MSG" | grep -qiE "^major:"; then
+          # Parse commit message to determine version increment logic
+          if echo "$COMMIT_MSG" | grep -qiE "^major:"; then
             MAJOR=$((MAJOR + 1))
             MINOR=0
             PATCH=0
@@ -69,11 +62,9 @@ jobs:
             PATCH=0
           elif echo "$COMMIT_MSG" | grep -qiE "^fix:"; then
             PATCH=$((PATCH + 1))
-          else
-            echo "No version bump keyword found. Skipping tag creation."
-            exit 0
           fi
 
+          # develop still uses the latest stable version, no patch increment
           NEW_VERSION="v${MAJOR}.${MINOR}.${PATCH}"
           echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
           echo "New version: $NEW_VERSION"
@@ -81,12 +72,7 @@ jobs:
       - name: Generate new tag
         id: new-tag
         run: |
-          if [[ -z "${NEW_VERSION}" ]]; then
-            echo "No new version generated, skipping."
-            exit 1
-          fi
-
-          # Process dev version number
+          # develop branch: create vX.X.X-dev.1 increment
           if [[ "${GITHUB_REF}" == "refs/heads/develop" ]]; then
             DEV_COUNT=$(git tag --list "${NEW_VERSION}-dev.*" | grep -Eo '[0-9]+$' | sort -n | tail -n 1)
             if [[ -z "$DEV_COUNT" ]]; then
