@@ -1,3 +1,10 @@
+# [1.0.0-dev.23](https://github.com/FirmaChain/mintall-nft-cert-api/compare/v1.0.0-dev.22...v1.0.0-dev.23) (2025-02-26)
+
+
+### Bug Fixes
+
+* use docker compose v2, remove version ([23e7e17](https://github.com/FirmaChain/mintall-nft-cert-api/commit/23e7e17772b0023be6e65ca74c7db7ba73d7d56f))
+
 # [1.0.0-dev.22](https://github.com/FirmaChain/mintall-nft-cert-api/compare/v1.0.0-dev.21...v1.0.0-dev.22) (2025-02-26)
 
 
