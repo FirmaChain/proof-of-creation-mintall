@@ -106,6 +106,7 @@ jobs:
               echo "Creating directory for ${REPO_NAME}..."
               mkdir -p "$SERVICE_DIR"
               mkdir -p "$SERVICE_DIR/backup"
+              touch "$SERVICE_DIR/.env"
             else
               echo "Directory for ${REPO_NAME} already exists."
             fi
