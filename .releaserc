@@ -6,7 +6,8 @@
     {
       "name": "develop",
       "prerelease": "dev",
-      "channel": "dev"
+      "channel": "dev",
+      "inheritFrom": "master"
     }
   ],
   "tagFormat": "v${version}",
