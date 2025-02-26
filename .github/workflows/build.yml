@@ -37,20 +37,37 @@ jobs:
         id: tag
         run: |
           if [[ $GITHUB_EVENT_NAME == "workflow_run" ]]; then
-            git fetch --tags
-            TAG=$(git describe --tags --abbrev=0)
-            echo "GITHUB_TAG=$TAG" >> $GITHUB_ENV
+            # Get all tags and ensure they are the latest
+            git fetch --tags --force
             
-            # Determine branch from workflow run
+            # Determine branch
             if [[ "${{ github.event.workflow_run.head_branch }}" == "master" ]]; then
               echo "BRANCH=master" >> $GITHUB_ENV
+              
+              # For master branch, get the latest tag without -dev suffix
+              TAG=$(git tag --sort=-v:refname | grep -v "\-dev\." | head -n 1)
+              if [ -z "$TAG" ]; then
+                # If no non-dev tag is found, use any latest tag
+                TAG=$(git tag --sort=-v:refname | head -n 1)
+              fi
             else
               echo "BRANCH=develop" >> $GITHUB_ENV
+              
+              # For develop branch, get the latest tag with -dev suffix
+              TAG=$(git tag --sort=-v:refname | grep "\-dev\." | head -n 1)
+              if [ -z "$TAG" ]; then
+                # If no dev tag is found, use any latest tag
+                TAG=$(git tag --sort=-v:refname | head -n 1)
+              fi
             fi
+            
+            echo "Latest tag found: $TAG"
+            echo "GITHUB_TAG=$TAG" >> $GITHUB_ENV
           else
+            # Get tag from pushed tag
             echo "GITHUB_TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
             
-            # For direct tag pushes, determine branch from tag format
+            # Determine branch from tag format
             if [[ "${GITHUB_REF#refs/tags/}" == *-dev.* ]]; then
               echo "BRANCH=develop" >> $GITHUB_ENV
             else
@@ -66,9 +83,10 @@ jobs:
           if [[ "${{ env.BRANCH }}" == "master" ]]; then
             # Extract version number without any suffix
             VERSION=$(echo "${{ env.GITHUB_TAG }}" | sed -E 's/v([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
+            echo "BASE_VERSION=$VERSION" >> $GITHUB_ENV
             echo "IMAGE_TAG=${{ env.REPO_NAME }}.v${VERSION}-prod" >> $GITHUB_ENV
           else
-            # For develop branch, keep the existing format
+            # For develop branch, keep existing format
             echo "IMAGE_TAG=${{ env.REPO_NAME }}.${{ env.GITHUB_TAG }}" >> $GITHUB_ENV
           fi
           echo "Will use image tag: ${{ env.IMAGE_TAG }}"
