@@ -20,12 +20,18 @@ jobs:
       - name: Get latest tag
         id: latest-tag
         run: |
-          # get the latest service.vX.X.X or service.vX.X.X-dev.X version
-          LATEST_TAG=$(git tag --list "service.v*" --sort=-v:refname | head -n 1)
+          # Fetch all tags
+          git fetch --tags
 
-          # if there is no tag, initialize v0.0.0
+          # Get the repository name
+          REPO_NAME=$(echo "$GITHUB_REPOSITORY" | cut -d '/' -f 2)
+
+          # Get the latest tag for the repository
+          LATEST_TAG=$(git tag --list "${REPO_NAME}.v*" --sort=-v:refname | head -n 1)
+
+          # If there is no tag, initialize v0.0.0
           if [[ -z "$LATEST_TAG" ]]; then
-            LATEST_TAG="service.v0.0.0"
+            LATEST_TAG="${REPO_NAME}.v0.0.0"
           fi
 
           echo "Latest tag: $LATEST_TAG"
@@ -85,3 +91,4 @@ jobs:
           git config user.email "github-actions@github.com"
           git tag ${{ env.NEW_TAG }}
           git push origin ${{ env.NEW_TAG }}
+        continue-on-error: false
