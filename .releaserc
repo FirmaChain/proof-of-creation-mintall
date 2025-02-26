@@ -1,18 +1,18 @@
 {
   "branches": [
     {
-      "name": "develop",
-      "prerelease": "dev"
+      "name": "master"
     },
     {
-      "name": "master"
+      "name": "develop",
+      "prerelease": "dev",
+      "channel": "dev"
     }
   ],
   "tagFormat": "v${version}",
   "plugins": [
     "@semantic-release/commit-analyzer",
     "@semantic-release/release-notes-generator",
-    "@semantic-release/changelog",
     [
       "@semantic-release/git",
       {
