@@ -22,7 +22,5 @@
       }
     ],
     "@semantic-release/github"
-  ],
-  "dryRun": false,
-  "ci": true
+  ]
 }
