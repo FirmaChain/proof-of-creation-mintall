@@ -120,15 +120,15 @@ jobs:
             fi
             echo "Environment: ${ENV}"
             
-            # Backup existing docker-compose.yml if it exists
-            if [ -f "docker-compose.yml" ]; then
-              cp docker-compose.yml ./backup/docker-compose.yml.bak.$(date +%Y%m%d%H%M%S)
+            # Backup existing docker compose.yml if it exists
+            if [ -f "docker compose.yml" ]; then
+              cp docker compose.yml ./backup/docker compose.yml.bak.$(date +%Y%m%d%H%M%S)
               echo "✓ Backed up existing configuration"
             fi
             
-            # Create new docker-compose.yml
-            echo "Creating docker-compose configuration..."
-            cat > docker-compose.yml << EOF
+            # Create new docker compose.yml
+            echo "Creating docker compose configuration..."
+            cat > docker compose.yml << EOF
             version: '3.8'
             
             services:
@@ -151,7 +151,7 @@ jobs:
             # Container management
             if docker ps -a --format '{{.Names}}' | grep -q "^${REPO_NAME}$"; then
               echo "Stopping existing container..."
-              docker-compose down
+              docker compose down
               echo "✓ Existing container stopped"
             else
               echo "✓ No existing container found"
@@ -159,7 +159,7 @@ jobs:
             
             # Start container
             echo "Starting container..."
-            docker-compose up -d
+            docker compose up -d
             echo "✓ Container started successfully"
             
             # Clean up old images
