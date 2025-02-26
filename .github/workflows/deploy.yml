@@ -1,23 +1,13 @@
 name: Deploy to Server from AWS ECR
 
 on:
-  # when a new tag is pushed
-  push:
-    tags:
-      - 'v*-dev.*'
-  # when the Build workflow is completed
   workflow_run:
-    workflows: ['Build and Push to AWS ECR']
+    workflows: ["Build and Push to AWS ECR"]
     types:
       - completed
 
 jobs:
   deploy:
-    # Only run when a new tag is pushed or develop branch is pushed or the Build workflow is completed
-    if: github.event_name == 'push' || 
-        (github.event_name == 'workflow_run' && 
-        github.event.workflow_run.conclusion == 'success' &&
-        github.event.workflow_run.head_branch == 'develop')
     runs-on: ubuntu-latest
     environment: ${{ startsWith(github.ref, 'refs/tags/v') && !contains(github.ref, '-dev.') && 'production' || 'development' }}
     env:
@@ -53,7 +43,7 @@ jobs:
             echo "GITHUB_TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
           fi
           echo "Will use GitHub tag: ${{ env.GITHUB_TAG }}"
-          
+
       - name: Create custom image tag with repo name
         run: |
           echo "IMAGE_TAG=${{ env.REPO_NAME }}.${{ env.GITHUB_TAG }}" >> $GITHUB_ENV
@@ -89,16 +79,16 @@ jobs:
           script: |
             echo "=== DEPLOYMENT STARTED ==="
             echo "Image: ${DEPLOY_TAG}"
-            
+
             # Login to ECR
             echo "Logging into ECR..."
             aws ecr get-login-password --region ${AWS_REGION} | \
             docker login --username AWS --password-stdin $(echo ${ECR_URI} | cut -d/ -f1) > /dev/null 2>&1
-            
+
             # Pull image
             echo "Pulling image..."
             docker pull ${ECR_URI}:${DEPLOY_TAG}
-            
+
             # Create service directory
             SERVICE_DIR="$HOME/${REPO_NAME}"
             echo "Setting up service directory: ${REPO_NAME}"
@@ -109,10 +99,10 @@ jobs:
             else
               echo "✓ Using existing service directory"
             fi
-            
+
             # Enter the directory
             cd "$SERVICE_DIR"
-            
+
             # Determine environment based on tag
             if [[ "${DEPLOY_TAG}" == *".latest" ]]; then
               ENV="production"
@@ -120,13 +110,13 @@ jobs:
               ENV="development"
             fi
             echo "Environment: ${ENV}"
-            
+
             # Backup existing docker-compose.yml if it exists
             if [ -f "docker-compose.yml" ]; then
               cp docker-compose.yml ./backup/docker-compose.yml.bak.$(date +%Y%m%d%H%M%S)
               echo "✓ Backed up existing configuration"
             fi
-            
+
             # Create new docker-compose.yml
             echo "Creating docker-compose configuration..."
             cat > docker-compose.yml << EOF
@@ -146,7 +136,7 @@ jobs:
                 volumes:
                   - $HOME/.aws:/root/.aws
             EOF
-            
+
             # Container management
             if docker ps -a --format '{{.Names}}' | grep -q "^${REPO_NAME}$"; then
               echo "Stopping existing container..."
@@ -155,23 +145,23 @@ jobs:
             else
               echo "✓ No existing container found"
             fi
-            
+
             # Start container
             echo "Starting container..."
             docker compose up -d
             echo "✓ Container started successfully"
-            
+
             # Clean up old images
             echo "=== STARTING IMAGE CLEANUP ==="
-            
+
             # Set number of images to keep
             KEEP=4
-            
+
             # Get all development version images for current service
             echo "Finding development images for ${REPO_NAME}..."
             DEV_IMAGES=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep "${REPO_NAME}" | grep "\-dev\.")
             DEV_COUNT=$(echo "$DEV_IMAGES" | grep -v "^$" | wc -l)
-            
+
             if [ $DEV_COUNT -gt $KEEP ]; then
               # Calculate how many images to delete
               TO_DELETE=$((DEV_COUNT - KEEP))
@@ -194,9 +184,9 @@ jobs:
             else
               echo "Only $DEV_COUNT development images found, no cleanup needed"
             fi
-            
+
             # Print remaining images for verification
             echo "Remaining images:"
             docker images --format "{{.Repository}}:{{.Tag}}" | grep "${REPO_NAME}" | grep "\-dev\."
-            
+
             echo "=== DEPLOYMENT COMPLETED ==="
