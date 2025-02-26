@@ -1,45 +1,87 @@
-name: Semantic Release
+name: Auto Versioning & Release
 
 on:
   push:
     branches:
       - develop
       - master
+      - "hotfix/*"  # allow hotfix branches to trigger
 
 jobs:
   release:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0
-          persist-credentials: true
+          fetch-depth: 0 # get all tags for version calculation
 
-      - name: Set branch name
+      - name: Get latest tag
+        id: latest-tag
         run: |
-          echo "BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+          # get the latest service.vX.X.X or service.vX.X.X-dev.X version
+          LATEST_TAG=$(git tag --list "service.v*" --sort=-v:refname | head -n 1)
 
-      - name: Configure Git
+          # if there is no tag, initialize v0.0.0
+          if [[ -z "$LATEST_TAG" ]]; then
+            LATEST_TAG="service.v0.0.0"
+          fi
+
+          echo "Latest tag: $LATEST_TAG"
+          echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_ENV
+
+      - name: Determine version bump (major, minor, patch)
+        id: version-bump
         run: |
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@github.com"
+          # get the latest commit message
+          COMMIT_MSG=$(git log -1 --pretty=%B)
 
-      - name: Checkout correct branch
+          # parse the version number
+          BASE_VERSION=$(echo $LATEST_TAG | sed -E 's/service\.v([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
+          MAJOR=$(echo $BASE_VERSION | cut -d. -f1)
+          MINOR=$(echo $BASE_VERSION | cut -d. -f2)
+          PATCH=$(echo $BASE_VERSION | cut -d. -f3)
+
+          # version increment logic
+          if [[ "${GITHUB_REF}" == refs/heads/hotfix/* ]]; then
+            PATCH=$((PATCH + 1))
+            echo "Hotfix detected, forcing patch bump."
+          elif echo "$COMMIT_MSG" | grep -qiE "^major:"; then
+            MAJOR=$((MAJOR + 1))
+            MINOR=0
+            PATCH=0
+          elif echo "$COMMIT_MSG" | grep -qiE "^feat:"; then
+            MINOR=$((MINOR + 1))
+            PATCH=0
+          elif echo "$COMMIT_MSG" | grep -qiE "^fix:"; then
+            PATCH=$((PATCH + 1))
+          else
+            echo "No version bump keyword found. Skipping tag creation."
+            exit 0
+          fi
+
+          NEW_VERSION="service.v${MAJOR}.${MINOR}.${PATCH}"
+          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+          echo "New version: $NEW_VERSION"
+
+      - name: Generate new tag
+        id: new-tag
         run: |
-          git checkout $BRANCH_NAME
-          git branch --show-current
+          # handle dev version number
+          if [[ "${GITHUB_REF}" == "refs/heads/develop" ]]; then
+            DEV_COUNT=$(git tag --list "${NEW_VERSION}-dev.*" | wc -l)
+            NEW_TAG="${NEW_VERSION}-dev.$((DEV_COUNT + 1))"
+          else
+            NEW_TAG="${NEW_VERSION}"
+          fi
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 23.6.0
+          echo "NEW_TAG=$NEW_TAG" >> $GITHUB_ENV
+          echo "Generated tag: $NEW_TAG"
 
-      - name: Install dependencies
-        run: yarn install --frozen-lockfile
-
-      - name: Run semantic-release with debug
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DEBUG: semantic-release:*
-        run: npx semantic-release --debug
+      - name: Create and push new tag
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git tag ${{ env.NEW_TAG }}
+          git push origin ${{ env.NEW_TAG }}
