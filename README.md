@@ -63,21 +63,34 @@ Use the following command to start the local server:
 yarn start:debug
 ```
 
-### Development Environment
+## Deployment
 
-Use the following command to start the development server with PM2:
+### Development with Container
 
-```bash
-yarn start:dev
-```
+The application is automatically deployed to the development environment using GitHub Actions CI/CD pipeline when changes are pushed to the `develop` branch. The workflow:
 
-### Production Environment
+1. Builds a Docker image with the tag format `{service-name}.v{version}-dev.{number}`
+2. Pushes the image to AWS ECR
+3. Deploys the container to the development server
 
-Use the following command to start the production server with PM2:
+### Production
 
-```bash
-yarn start:prod
-```
+The application is automatically deployed to the production environment using GitHub Actions CI/CD pipeline when:
+
+1. A new release tag is created (format: `v{major}.{minor}.{patch}`)
+2. Changes are merged to the `master` branch
+3. coming soon
+
+### CI/CD Pipeline
+
+Our deployment process is fully automated using GitHub Actions. The pipeline consists of:
+
+1. **Test Workflow**: Runs tests on code changes
+2. **Semantic Release**: Automatically generates version numbers based on commit messages
+3. **Build**: Builds and pushes Docker images to AWS ECR
+4. **Deploy**: Deploys Docker containers to the appropriate environment
+
+No manual deployment is required. The system automatically detects changes, builds Docker images, and deploys them to the correct environment.
 
 ## API Endpoints
 
@@ -132,5 +145,3 @@ Contributions are welcome! Please ensure all tests pass and adhere to ESLint sta
 ## License
 
 MIT License
-
-
