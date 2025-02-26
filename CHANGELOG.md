@@ -1,3 +1,10 @@
+# [1.0.0-dev.19](https://github.com/FirmaChain/mintall-nft-cert-api/compare/v1.0.0-dev.18...v1.0.0-dev.19) (2025-02-26)
+
+
+### Bug Fixes
+
+* touch .env ([68324d7](https://github.com/FirmaChain/mintall-nft-cert-api/commit/68324d7352e0902b893c809c47e8d0708276648d))
+
 # [1.0.0-dev.18](https://github.com/FirmaChain/mintall-nft-cert-api/compare/v1.0.0-dev.17...v1.0.0-dev.18) (2025-02-26)
 
 
