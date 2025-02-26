@@ -7,7 +7,7 @@ on:
       - 'v*'
   # When the Semantic Release workflow is completed
   workflow_run:
-    workflows: ['Auto Versioning & Release']
+    workflows: ['Semantic Release']
     types:
       - completed
     branches:
