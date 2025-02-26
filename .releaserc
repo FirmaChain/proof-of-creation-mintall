@@ -1,18 +1,19 @@
 {
   "branches": [
     {
-      "name": "develop",
-      "prerelease": "dev"
+      "name": "master"
     },
     {
-      "name": "master"
+      "name": "develop",
+      "prerelease": "dev",
+      "channel": "dev",
+      "inheritFrom": "master"
     }
   ],
   "tagFormat": "v${version}",
   "plugins": [
     "@semantic-release/commit-analyzer",
     "@semantic-release/release-notes-generator",
-    "@semantic-release/changelog",
     [
       "@semantic-release/git",
       {
@@ -21,5 +22,8 @@
       }
     ],
     "@semantic-release/github"
-  ]
+  ],
+  "dryRun": false,
+  "ci": true,
+  "forceGitTag": true
 }
