@@ -4,7 +4,7 @@ on:
   # when a new tag is pushed
   push:
     tags:
-      - 'v*'
+      - 'v*-dev.*'
   # when the Build workflow is completed
   workflow_run:
     workflows: ['Build and Push to AWS ECR']
@@ -14,7 +14,7 @@ on:
 jobs:
   deploy:
     # Only run when a new tag is pushed or develop branch is pushed or the Build workflow is completed
-    if: (github.event_name == 'push' && contains(github.ref, '-dev.')) || 
+    if: github.event_name == 'push' || 
         (github.event_name == 'workflow_run' && 
         github.event.workflow_run.conclusion == 'success' &&
         github.event.workflow_run.head_branch == 'develop')
