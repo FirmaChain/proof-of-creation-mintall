@@ -9,7 +9,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    if: ${{ startsWith(github.ref, 'refs/tags/v') && !contains(github.ref, '-dev.') }}
+    if: ${{ startsWith(github.ref, 'refs/tags/v') && contains(github.ref, '-dev.') }}
     environment: ${{ startsWith(github.ref, 'refs/tags/v') && !contains(github.ref, '-dev.') && 'production' || 'development' }}
     env:
       ECR_URI: ${{ secrets.ECR_URI }}
