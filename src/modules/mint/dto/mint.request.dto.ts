@@ -1,17 +1,19 @@
-import { IsOptional, IsString, IsObject, IsNotEmpty } from 'class-validator';
+import { IsOptional, IsString, IsNotEmpty } from 'class-validator';
 
 export class MintRequestDto {
   @IsString()
   @IsNotEmpty()
   imageHash: string;
 
-  // @IsString()
+  @IsString()
+  @IsNotEmpty()
   imagePerceptualHash: string;
 
-  // @IsString()
+  @IsString()
+  @IsNotEmpty()
   version: string;
 
-  // @IsOptional()
+  @IsOptional()
   // @IsObject()
   c2paMetadata?: Record<string, any>;
 
