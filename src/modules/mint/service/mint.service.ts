@@ -77,6 +77,8 @@ export class MintService {
       nftCertificateEntity.imagePerceptualHash = body.imagePerceptualHash || '';
       nftCertificateEntity.nftMetadataUrl = tokenUri;
       nftCertificateEntity.tokenId = tokenId;
+      nftCertificateEntity.creatorName = body.creatorName || '';
+      nftCertificateEntity.c2paMetadata = body.c2paMetadata || {};
       await this.nftCertificateRepository.save(nftCertificateEntity);
       this.logger.log(`Save nft certificate in database`);
 
