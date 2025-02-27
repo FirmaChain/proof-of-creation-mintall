@@ -1,13 +1,11 @@
 {
   "branches": [
     {
-      "name": "master"
+      "name": "develop",
+      "prerelease": "dev"
     },
     {
-      "name": "develop",
-      "prerelease": "dev",
-      "channel": "dev",
-      "inheritFrom": "master"
+      "name": "master"
     }
   ],
   "tagFormat": "v${version}",
@@ -17,7 +15,7 @@
     [
       "@semantic-release/git",
       {
-        "assets": [],
+        "assets": ["package.json"],
         "message": "chore(release): ${nextRelease.version} [skip ci]"
       }
     ],
