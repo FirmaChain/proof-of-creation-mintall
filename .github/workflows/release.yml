@@ -17,29 +17,23 @@ jobs:
           persist-credentials: true
 
       - name: Set branch name
-        run: |
-          echo "BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
-
-      - name: Configure Git
-        run: |
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@github.com"
+        run: echo "BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
 
       - name: Checkout correct branch
         run: |
+          git fetch --no-tags --depth=1 origin $BRANCH_NAME
           git checkout $BRANCH_NAME
           git branch --show-current
 
-      - name: Set up Node.js
+      - name: Install Node.js (Only for semantic-release)
         uses: actions/setup-node@v3
         with:
           node-version: 23.6.0
 
-      - name: Install dependencies
-        run: yarn install --frozen-lockfile
+      - name: Install semantic-release (Only if necessary)
+        run: npm install -g semantic-release @semantic-release/git @semantic-release/github
 
-      - name: Run semantic-release with debug
+      - name: Run semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DEBUG: semantic-release:*
-        run: npx semantic-release --debug
+        run: npx semantic-release
