@@ -141,7 +141,7 @@ jobs:
             # Container management
             if docker ps -a --format '{{.Names}}' | grep -q "^${REPO_NAME}$"; then
               echo "Stopping existing container..."
-              docker compose down
+              docker rm -f ${REPO_NAME} || true
               echo "✓ Existing container stopped"
             else
               echo "✓ No existing container found"
