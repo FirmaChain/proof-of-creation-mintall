@@ -25,7 +25,7 @@ export class SuccessInterceptor<T> implements NestInterceptor<T> {
         statusCode: HTTP_STATUS.OK.code, // Use the constant for the status code
         message: HTTP_STATUS.OK.message, // Use the constant for the message
         data: data || null, // The actual data returned by the handler
-        timestamp: new Date().toISOString(), // Timestamp of the response
+        // timestamp: new Date().toISOString(), // Timestamp of the response
       })),
     );
   }
