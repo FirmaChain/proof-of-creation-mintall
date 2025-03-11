@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import helmet from 'helmet';
 import { initConfig } from './config/load.config';
+import { AllExceptionsFilter } from './common/exception/all.exception.filter';
 
 async function bootstrap() {
   // load default config
@@ -14,7 +15,7 @@ async function bootstrap() {
     timestamp: true,
   });
 
-  // app.useGlobalFilters(new AllExceptionsFilter());
+  app.useGlobalFilters(new AllExceptionsFilter());
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
 
   app.use(

@@ -8,7 +8,7 @@ on:
 
 jobs:
   release:
-    runs-on: ubuntu-latest
+    runs-on: fig-devnet-server
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3

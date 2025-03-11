@@ -8,7 +8,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: fig-devnet-server
     # if: github.ref == 'refs/heads/develop'
     environment: ${{ startsWith(github.ref, 'refs/tags/v') && !contains(github.ref, '-dev.') && 'production' || 'development' }}
     env:
@@ -141,7 +141,7 @@ jobs:
             # Container management
             if docker ps -a --format '{{.Names}}' | grep -q "^${REPO_NAME}$"; then
               echo "Stopping existing container..."
-              docker compose down
+              docker rm -f ${REPO_NAME} || true
               echo "✓ Existing container stopped"
             else
               echo "✓ No existing container found"
