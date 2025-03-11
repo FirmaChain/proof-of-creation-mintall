@@ -43,14 +43,23 @@ describe('MintService', () => {
               Wallet: {
                 fromPrivateKey: jest.fn().mockResolvedValue({}),
               },
-              Nft: {
-                mint: jest.fn().mockResolvedValue({
+              Cw721: {
+                getAllNftIdList: jest.fn().mockResolvedValue([]),
+                mintWithExtension: jest.fn().mockResolvedValue({
                   code: 0,
                   rawLog: JSON.stringify([
                     {
                       events: [
+                        {},
+                        {},
                         {
-                          attributes: [{}, {}, { value: 'mockTokenId' }],
+                          attributes: [
+                            {},
+                            {},
+                            {},
+                            {},
+                            { value: 'mockTokenId' },
+                          ],
                         },
                       ],
                     },
@@ -99,12 +108,14 @@ describe('MintService', () => {
   });
 
   it('should throw BadRequestException if minting fails', async () => {
-    jest.spyOn(firmaService.getSDK().Nft, 'mint').mockResolvedValueOnce({
-      code: 1,
-      rawLog: '',
-      transactionHash: '',
-      height: 0,
-    });
+    jest
+      .spyOn(firmaService.getSDK().Cw721, 'mintWithExtension')
+      .mockResolvedValueOnce({
+        code: 1,
+        rawLog: '',
+        transactionHash: '',
+        height: 0,
+      });
 
     const dto = new MintRequestDto();
     dto.imageHash = 'mockImageHash';
