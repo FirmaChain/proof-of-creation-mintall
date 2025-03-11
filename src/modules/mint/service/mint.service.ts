@@ -6,7 +6,6 @@ import { RedisService } from '../../../shared/redis/redis.service';
 import { NFTCertificateEntity } from '../../../modules/entities/nft.certificate.entity';
 import { FirmaService } from '../../../shared/firma/firma.service';
 import { FirmaSDK } from '@firmachain/firma-js';
-import { BroadcastTxResponse } from '@firmachain/firma-js/dist/sdk/firmachain/common/stargateclient';
 import { RowLog } from '../interface/mint.interface';
 import { ConfigService } from '@nestjs/config';
 
@@ -30,6 +29,12 @@ export class MintService {
       // Get private key from secret manager
       const privateKey = this.configService.get<string>(
         'PRIVATE_KEY',
+      ) as string;
+      const contractAddress = this.configService.get<string>(
+        'CONTRACT_ADDRESS',
+      ) as string;
+      const walletAddress = this.configService.get<string>(
+        'WALLET_ADDRESS',
       ) as string;
 
       // token uri (TODO: 환경변수로 변경)
@@ -56,20 +61,40 @@ export class MintService {
       // wallet
       const wallet = await this.firmaSDK.Wallet.fromPrivateKey(privateKey);
 
+      // get all nft id list for calculate token id
+      const nftIdList =
+        await this.firmaSDK.Cw721.getAllNftIdList(contractAddress);
+      let newTokenId: number;
+      if (nftIdList.length === 0) {
+        newTokenId = 1;
+      } else {
+        nftIdList.sort((a, b) => parseInt(a) - parseInt(b));
+        const maxId = parseInt(nftIdList[nftIdList.length - 1]);
+        newTokenId = maxId + 1;
+      }
+
       // mint
-      const res: BroadcastTxResponse = await this.firmaSDK.Nft.mint(
+      const res = await this.firmaSDK.Cw721.mintWithExtension(
         wallet,
-        tokenUri,
+        contractAddress,
+        walletAddress,
+        newTokenId.toString(),
+        {
+          name: 'mintall nft certificate',
+          description: 'mintall nft certificate',
+          image: tokenUri,
+        },
       );
 
       // check mint result
       if (!res || res.code !== 0 || !res.rawLog || res.rawLog.length === 0) {
+        this.logger.error(res.rawLog);
         throw new BadRequestException('NFT mint failed');
       }
 
       // parse rawLog
       const rawLog = JSON.parse(res.rawLog) as RowLog;
-      const tokenId = rawLog[0].events[0].attributes[2].value;
+      const tokenId = rawLog[0].events[2].attributes[4].value;
 
       // save nft certificate in database
       const nftCertificateEntity = new NFTCertificateEntity();
