@@ -36,9 +36,7 @@ export class MintService {
       const walletAddress = this.configService.get<string>(
         'WALLET_ADDRESS',
       ) as string;
-
-      // token uri (TODO: 환경변수로 변경)
-      const tokenUri = 'https://images.app.goo.gl/it644rEhzNcvDXLSA';
+      const tokenUri = this.configService.get<string>('TOKEN_URI') as string;
 
       // check cache data
       const cacheData = await this.redisService.hgetall(
