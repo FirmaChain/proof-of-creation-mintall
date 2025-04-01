@@ -5,38 +5,17 @@ import {
 } from '@aws-sdk/client-secrets-manager';
 import { KMSClient, DecryptCommand } from '@aws-sdk/client-kms';
 import { GetParameterCommand, SSMClient } from '@aws-sdk/client-ssm';
-interface AwsSecretJson {
-  ENCRYPT_PRIVATE_KEY: string;
-  DATABASE_PASSWORD: string;
-  FIXED_JWT_TOKEN: string;
-}
-
-interface LocalSecretJson {
-  PRIVATE_KEY: string;
-  DATABASE_PASSWORD: string;
-  FIXED_JWT_TOKEN: string;
-  DATABASE_HOST: string;
-  DATABASE_PORT: number;
-  DATABASE_USER: string;
-  REDIS_HOST: string;
-  REDIS_PORT: number;
-  REDIS_PASSWORD?: string;
-}
-
-interface DefaultConfig {
-  PRIVATE_KEY: string;
-  DATABASE_PASSWORD: string;
-  FIXED_JWT_TOKEN: string;
-}
-
-interface SsmParameterJson {
-  DATABASE_HOST: string;
-  DATABASE_PORT: number;
-  DATABASE_USER: string;
-  REDIS_HOST: string;
-  REDIS_PORT: number;
-  REDIS_PASSWORD: string;
-}
+import fs from 'fs';
+import vault from 'node-vault';
+import {
+  AwsSecretJson,
+  DefaultConfig,
+  LocalSecretJson,
+  SsmParameterJson,
+  VaultDatabaseSecret,
+  VaultRedisSecret,
+  VaultServiceSecret,
+} from './config.interface';
 
 let defaultConfig: DefaultConfig;
 
@@ -45,7 +24,13 @@ const logger = new Logger('Config load');
 export const initConfig = async () => {
   try {
     // Load the secret data
-    if (process.env.NODE_ENV !== 'local') {
+    if (process.env.NODE_ENV === 'vault') {
+      logger.log('Loading secrets from Vault...');
+      const secretData = await loadVaultSecret();
+      defaultConfig = {
+        ...secretData,
+      };
+    } else if (process.env.NODE_ENV !== 'local') {
       logger.log('Loading secrets from AWS secret manager...');
       const secretData = await loadAwsSecret();
       const privateKey = await decryptSecret(secretData.ENCRYPT_PRIVATE_KEY);
@@ -55,7 +40,7 @@ export const initConfig = async () => {
         DATABASE_PASSWORD: secretData.DATABASE_PASSWORD,
         FIXED_JWT_TOKEN: secretData.FIXED_JWT_TOKEN,
         ...ssmConfig,
-      };
+      } as DefaultConfig;
     } else {
       // load local secret
       logger.log('Loading secrets from local .env file...');
@@ -64,11 +49,68 @@ export const initConfig = async () => {
         PRIVATE_KEY: secretData.PRIVATE_KEY,
         DATABASE_PASSWORD: secretData.DATABASE_PASSWORD,
         FIXED_JWT_TOKEN: secretData.FIXED_JWT_TOKEN,
-      };
+      } as DefaultConfig;
     }
   } catch (error) {
     logger.error(error);
     process.exit(1);
+  }
+};
+
+// load secrets from Vault
+const loadVaultSecret = async (): Promise<DefaultConfig> => {
+  try {
+    const tokenPath = process.env.VAULT_TOKEN_FILE;
+    if (!tokenPath) {
+      throw new Error('VAULT_TOKEN_FILE environment variable is not defined');
+    }
+
+    const token = fs.readFileSync(tokenPath, 'utf8').trim();
+    logger.log('Successfully read Vault token');
+
+    const vaultAddr = process.env.VAULT_ADDR || 'http://vault:8200';
+    const vaultClient = vault({
+      apiVersion: 'v1',
+      endpoint: vaultAddr,
+      token: token,
+    });
+    logger.log('Fetching secrets from Vault...');
+
+    // get database info
+    const dbResult = (await vaultClient.read(
+      process.env.DATABASE_SECRET_NAME as string,
+    )) as VaultDatabaseSecret;
+    const dbData = dbResult.data.data;
+
+    // get redis info
+    const redisResult = (await vaultClient.read(
+      process.env.REDIS_SECRET_NAME as string,
+    )) as VaultRedisSecret;
+    const redisData = redisResult.data.data;
+
+    // get service info
+    const serviceResult = (await vaultClient.read(
+      process.env.SERVICE_SECRET_NAME as string,
+    )) as VaultServiceSecret;
+    const serviceData = serviceResult.data.data;
+
+    logger.log('Successfully fetched all secrets from Vault');
+
+    return {
+      PRIVATE_KEY: serviceData.PRIVATE_KEY,
+      DATABASE_PASSWORD: dbData.DATABASE_PASSWORD,
+      FIXED_JWT_TOKEN: serviceData.FIXED_JWT_TOKEN,
+      DATABASE_HOST: dbData.DATABASE_HOST,
+      DATABASE_PORT: parseInt(dbData.DATABASE_PORT),
+      DATABASE_USER: dbData.DATABASE_USER,
+      DATABASE_NAME: serviceData.DATABASE_NAME,
+      REDIS_HOST: redisData.REDIS_HOST,
+      REDIS_PORT: parseInt(redisData.REDIS_PORT),
+      REDIS_PASSWORD: redisData.REDIS_PASSWORD,
+    };
+  } catch (error) {
+    logger.error('Error fetching secrets from Vault:', error);
+    throw error;
   }
 };
 

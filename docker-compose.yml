@@ -7,51 +7,64 @@ services:
     networks:
       - app-network
     container_name: mintall-nft-cert-api
-    env_file:
-      - .env
-    working_dir: /app
-    volumes:
-      - $HOME/.aws:/root/.aws
-    ports:
-      - '3000:3000'
     environment:
       - PORT=3000
-      - NODE_ENV=development
-      # - DATABASE_HOST=postgres
-      # - DATABASE_PORT=5432
-      # - DATABASE_USER=app
-      # - DATABASE_NAME=mintall
-      # - REDIS_HOST=redis
-      # - REDIS_PORT=6379
-      # - AWS_REGION=ap-southeast-1
-      # - AWS_SECRET_NAME=prod/mintall-nft-cert-api/private-key
-    # depends_on:
-    #   - db
-    #   - redis
+      - NODE_ENV=vault
+      - VAULT_TOKEN_FILE=/etc/vault/token
+      - VAULT_ADDR=http://vault:8200
+      - DATABASE_SECRET_NAME=kv/data/DATABASE_INFO/POSTGRES/DB1
+      - REDIS_SECRET_NAME=kv/data/REDIS_INFO/DB1
+      - SERVICE_SECRET_NAME=kv/data/MINTALL_SERVICE_INFO
+    working_dir: /app
+    volumes:
+      # - $HOME/.aws:/root/.aws
+      - vault-token:/etc/vault
+    ports:
+      - '8000:3000'
+    depends_on:
+      - vault-agent
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
+
+  vault-agent:
+    image: hashicorp/vault:1.19
+    container_name: mintall-nft-cert-api-vault-agent
+    networks:
+      - app-network
+    cap_add:
+      - IPC_LOCK
+    volumes:
+      - ./vault/vault-agent.hcl:/etc/vault/vault-agent.hcl:ro
+      - ./vault/role-id:/etc/vault/role-id:ro
+      - ./vault/secret-id:/etc/vault/secret-id:ro
+      - vault-token:/etc/vault
+      - type: tmpfs
+        target: /vault/logs
+      - type: tmpfs
+        target: /vault/file
+    command: vault agent -config=/etc/vault/vault-agent.hcl
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 256M
+        reservations:
+          cpus: '0.05'
+          memory: 64M
 
 networks:
   app-network:
-    external: true 
+    external: true
 
-  # db:
-  #   image: postgres:latest
-  #   container_name: mintall-postgres
-  #   environment:
-  #     POSTGRES_USER: postgres
-  #     POSTGRES_PASSWORD: postgres
-  #     POSTGRES_DB: mintall
-  #   volumes:
-  #     - postgres_data:/var/lib/postgresql/data
-  #   ports:
-  #     - '5432:5432'
-
-  # redis:
-  #   image: redis:7
-  #   container_name: mintall-redis
-  #   ports:
-  #     - '6379:6379'
-  #   volumes:
-  #     - redis_data:/data
-# volumes:
-#   postgres_data:
-#   redis_data:
+volumes:
+  vault-token:
+    driver: local
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
