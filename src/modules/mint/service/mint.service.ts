@@ -36,7 +36,7 @@ export class MintService {
       const walletAddress = this.configService.get<string>(
         'WALLET_ADDRESS',
       ) as string;
-      const tokenUri = this.configService.get<string>('TOKEN_URI') as string;
+      const tokenUri = body.imageUrl;
 
       // check cache data
       const cacheData = await this.redisService.hgetall(
@@ -102,6 +102,7 @@ export class MintService {
       nftCertificateEntity.tokenId = tokenId;
       nftCertificateEntity.creatorName = body.creatorName || '';
       nftCertificateEntity.c2paMetadata = body.c2paMetadata || {};
+      nftCertificateEntity.transactionHash = res.transactionHash;
       await this.nftCertificateRepository.save(nftCertificateEntity);
       this.logger.log(`Save nft certificate in database`);
 
