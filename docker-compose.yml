@@ -20,7 +20,7 @@ services:
       # - $HOME/.aws:/root/.aws
       - vault-token:/etc/vault
     ports:
-      - '8000:3000'
+      - '4000:3000'
     depends_on:
       - vault-agent
     deploy:
@@ -46,8 +46,12 @@ services:
       - vault-token:/etc/vault
       - type: tmpfs
         target: /vault/logs
+        tmpfs:
+          size: 100M
       - type: tmpfs
         target: /vault/file
+        tmpfs:
+          size: 100M
     command: vault agent -config=/etc/vault/vault-agent.hcl
     deploy:
       resources:
