@@ -24,7 +24,9 @@ export class MintService {
     this.firmaSDK = this.firmaService.getSDK();
   }
 
-  async createMint(body: MintRequestDto): Promise<string> {
+  async createMint(
+    body: MintRequestDto,
+  ): Promise<{ tokenId: string; transactionHash: string }> {
     try {
       // Get private key from secret manager
       const privateKey = this.configService.get<string>(
@@ -44,7 +46,10 @@ export class MintService {
       );
       if (cacheData && cacheData.tokenId) {
         this.logger.log(`DATA already exists in cache`);
-        return cacheData.tokenId;
+        return {
+          tokenId: cacheData.tokenId,
+          transactionHash: cacheData.transactionHash,
+        };
       }
 
       // check database data
@@ -53,7 +58,10 @@ export class MintService {
       });
       if (nftCertificate) {
         this.logger.log(`DATA already exists in database`);
-        return nftCertificate.tokenId;
+        return {
+          tokenId: nftCertificate.tokenId,
+          transactionHash: nftCertificate.transactionHash,
+        };
       }
 
       // wallet
@@ -119,7 +127,10 @@ export class MintService {
       );
       this.logger.log('Set cache');
 
-      return tokenId;
+      return {
+        tokenId,
+        transactionHash: res.transactionHash,
+      };
     } catch (error) {
       this.logger.error(error);
       throw error;
