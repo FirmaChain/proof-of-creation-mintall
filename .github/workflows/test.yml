@@ -9,7 +9,7 @@ on:
 
 jobs:
   test:
-    runs-on: fig-devnet-server
+    runs-on: fig-devnet-action
 
     steps:
       - name: Checkout repository
