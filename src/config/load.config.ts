@@ -48,8 +48,11 @@ export const initConfig = async () => {
     if (process.env.NODE_ENV !== 'local') {
       logger.log('Loading secrets from AWS secret manager...');
       const secretData = await loadAwsSecret();
+      console.log('secretData', secretData);
       const privateKey = await decryptSecret(secretData.ENCRYPT_PRIVATE_KEY);
+      console.log('privateKey', privateKey);
       const ssmConfig = await loadSsmConfig(process.env.AWS_SECRET_NAME);
+      console.log('ssmConfig', ssmConfig);
       defaultConfig = {
         PRIVATE_KEY: privateKey as string,
         DATABASE_PASSWORD: secretData.DATABASE_PASSWORD,
@@ -127,12 +130,15 @@ const loadLocalSecret = (): LocalSecretJson => {
 const loadAwsSecret = async (): Promise<AwsSecretJson> => {
   try {
     const secretName = process.env.AWS_SECRET_NAME as string;
+    console.log('secretName', secretName);
     const region = process.env.AWS_REGION || 'ap-southeast-1';
+    console.log('region', region);
     const secretsClient = new SecretsManagerClient({
       region,
     });
     const command = new GetSecretValueCommand({ SecretId: secretName });
     const response = await secretsClient.send(command);
+    console.log('response', response);
     if (!response.SecretString) {
       throw new Error('Failed to load private key from aws secret manager.');
     }
