@@ -136,6 +136,7 @@ const loadAwsSecret = async (): Promise<AwsSecretJson> => {
     const secretsClient = new SecretsManagerClient({
       region,
     });
+    console.log('secretsClient', secretsClient);
     const command = new GetSecretValueCommand({ SecretId: secretName });
     const response = await secretsClient.send(command);
     console.log('response', response);
@@ -156,6 +157,7 @@ const loadAwsSecret = async (): Promise<AwsSecretJson> => {
     }
     return secretJson;
   } catch (error) {
+    console.log('error', error);
     logger.error('Error fetching secret from aws secret manager:', error);
     throw error;
   }
