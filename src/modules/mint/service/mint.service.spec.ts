@@ -96,10 +96,14 @@ describe('MintService', () => {
     const dto = new MintRequestDto();
     dto.imageHash = 'mockImageHash';
     dto.imagePerceptualHash = 'mockImagePerceptualHash';
+    dto.imageUrl = 'https://example.com/image.jpg';
 
     const result = await service.createMint(dto);
 
-    expect(result).toBe('mockTokenId');
+    expect(result).toEqual({
+      tokenId: 'mockTokenId',
+      transactionHash: 'mockTransactionHash'
+    });
     expect(redisService.hset).toHaveBeenCalledWith(`image:${dto.imageHash}`, {
       tokenId: 'mockTokenId',
       transactionHash: 'mockTransactionHash',

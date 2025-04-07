@@ -17,7 +17,7 @@ export class VerificationService {
 
   async checkVerification(
     param: VerificationRequestDto,
-  ): Promise<string | null> {
+  ): Promise<{ tokenId: string; transactionHash: string } | null> {
     try {
       const searchKey = param.key;
       const searchValue = param.value;
@@ -34,7 +34,10 @@ export class VerificationService {
       }
       if (cacheData && cacheData.tokenId) {
         this.logger.log(`DATA already exists in cache`);
-        return cacheData.tokenId;
+        return {
+          tokenId: cacheData.tokenId,
+          transactionHash: cacheData.transactionHash,
+        };
       }
 
       // if the imageHash is not in the cache, check if it is in the database
@@ -60,7 +63,10 @@ export class VerificationService {
           `image:index:${nftCertificate.transactionHash}`,
           nftCertificate.imageHash,
         );
-        return nftCertificate.tokenId;
+        return {
+          tokenId: nftCertificate.tokenId,
+          transactionHash: nftCertificate.transactionHash,
+        };
       }
 
       // if the imageHash is not in the cache or database, throw an error

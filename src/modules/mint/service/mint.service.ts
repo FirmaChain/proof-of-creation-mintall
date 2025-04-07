@@ -24,7 +24,9 @@ export class MintService {
     this.firmaSDK = this.firmaService.getSDK();
   }
 
-  async createMint(body: MintRequestDto): Promise<string> {
+  async createMint(
+    body: MintRequestDto,
+  ): Promise<{ tokenId: string; transactionHash: string }> {
     try {
       // Get private key from secret manager
       const privateKey = this.configService.get<string>(
@@ -36,7 +38,7 @@ export class MintService {
       const walletAddress = this.configService.get<string>(
         'WALLET_ADDRESS',
       ) as string;
-      const tokenUri = this.configService.get<string>('TOKEN_URI') as string;
+      const tokenUri = body.imageUrl;
 
       // check cache data
       const cacheData = await this.redisService.hgetall(
@@ -44,7 +46,10 @@ export class MintService {
       );
       if (cacheData && cacheData.tokenId) {
         this.logger.log(`DATA already exists in cache`);
-        return cacheData.tokenId;
+        return {
+          tokenId: cacheData.tokenId,
+          transactionHash: cacheData.transactionHash,
+        };
       }
 
       // check database data
@@ -53,7 +58,10 @@ export class MintService {
       });
       if (nftCertificate) {
         this.logger.log(`DATA already exists in database`);
-        return nftCertificate.tokenId;
+        return {
+          tokenId: nftCertificate.tokenId,
+          transactionHash: nftCertificate.transactionHash,
+        };
       }
 
       // wallet
@@ -102,6 +110,7 @@ export class MintService {
       nftCertificateEntity.tokenId = tokenId;
       nftCertificateEntity.creatorName = body.creatorName || '';
       nftCertificateEntity.c2paMetadata = body.c2paMetadata || {};
+      nftCertificateEntity.transactionHash = res.transactionHash;
       await this.nftCertificateRepository.save(nftCertificateEntity);
       this.logger.log(`Save nft certificate in database`);
 
@@ -118,7 +127,10 @@ export class MintService {
       );
       this.logger.log('Set cache');
 
-      return tokenId;
+      return {
+        tokenId,
+        transactionHash: res.transactionHash,
+      };
     } catch (error) {
       this.logger.error(error);
       throw error;
