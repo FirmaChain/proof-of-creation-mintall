@@ -75,7 +75,7 @@ jobs:
         with:
           host: ${{ secrets.DEV_SERVER_HOST }}
           username: ${{ secrets.DEV_SERVER_USER }}
-          key: ${{ secrets.DEV_SERVER_SSH_KEY }}
+          password: ${{ secrets.DEV_SERVER_PASSWORD }}
           envs: DEPLOY_TAG,ECR_URI,REPO_NAME,AWS_REGION,AWS_SECRET_NAME
           script: |
             echo "=== DEPLOYMENT STARTED ==="
