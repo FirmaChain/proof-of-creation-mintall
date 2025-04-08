@@ -127,7 +127,7 @@ jobs:
                 container_name: ${REPO_NAME}
                 restart: unless-stopped
                 ports:
-                  - "3000:3000"
+                  - "4000:3000"
                 env_file:
                   - .env
                 environment:
@@ -136,6 +136,12 @@ jobs:
                   - AWS_SECRET_NAME=${AWS_SECRET_NAME}
                 volumes:
                   - $HOME/.aws:/root/.aws
+                networks:
+                  - app-network
+              
+              networks:
+                app-network:
+                  external: true 
             EOF
 
             # Container management
