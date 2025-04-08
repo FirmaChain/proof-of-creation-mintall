@@ -139,9 +139,9 @@ jobs:
                 networks:
                   - app-network
               
-              networks:
-                app-network:
-                  external: true 
+            networks:
+              app-network:
+                external: true 
             EOF
 
             # Container management
