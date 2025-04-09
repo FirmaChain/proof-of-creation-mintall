@@ -68,15 +68,12 @@ export class MintService {
       const wallet = await this.firmaSDK.Wallet.fromPrivateKey(privateKey);
 
       // get all nft id list for calculate token id
-      const nftIdList =
-        await this.firmaSDK.Cw721.getAllNftIdList(contractAddress);
+      const totalNfts = await this.firmaSDK.Cw721.getTotalNfts(contractAddress);
       let newTokenId: number;
-      if (nftIdList.length === 0) {
+      if (totalNfts === 0) {
         newTokenId = 1;
       } else {
-        nftIdList.sort((a, b) => parseInt(a) - parseInt(b));
-        const maxId = parseInt(nftIdList[nftIdList.length - 1]);
-        newTokenId = maxId + 1;
+        newTokenId = totalNfts + 1;
       }
 
       // mint
