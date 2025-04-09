@@ -67,7 +67,7 @@ export class MintService {
       // wallet
       const wallet = await this.firmaSDK.Wallet.fromPrivateKey(privateKey);
 
-      // get all nft id list for calculate token id
+      // get total nfts number for calculate token id
       const totalNfts = await this.firmaSDK.Cw721.getTotalNfts(contractAddress);
       let newTokenId: number;
       if (totalNfts === 0) {
@@ -75,6 +75,7 @@ export class MintService {
       } else {
         newTokenId = totalNfts + 1;
       }
+      this.logger.log(`Total NFTs: ${totalNfts}, New Token ID: ${newTokenId}`);
 
       // mint
       const res = await this.firmaSDK.Cw721.mintWithExtension(
