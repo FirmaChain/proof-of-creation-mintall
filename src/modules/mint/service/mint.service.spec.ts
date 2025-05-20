@@ -44,7 +44,7 @@ describe('MintService', () => {
                 fromPrivateKey: jest.fn().mockResolvedValue({}),
               },
               Cw721: {
-                getAllNftIdList: jest.fn().mockResolvedValue([]),
+                getTotalNfts: jest.fn().mockResolvedValue(0),
                 mintWithExtension: jest.fn().mockResolvedValue({
                   code: 0,
                   rawLog: JSON.stringify([
@@ -96,10 +96,14 @@ describe('MintService', () => {
     const dto = new MintRequestDto();
     dto.imageHash = 'mockImageHash';
     dto.imagePerceptualHash = 'mockImagePerceptualHash';
+    dto.imageUrl = 'https://example.com/image.jpg';
 
     const result = await service.createMint(dto);
 
-    expect(result).toBe('mockTokenId');
+    expect(result).toEqual({
+      tokenId: 'mockTokenId',
+      transactionHash: 'mockTransactionHash'
+    });
     expect(redisService.hset).toHaveBeenCalledWith(`image:${dto.imageHash}`, {
       tokenId: 'mockTokenId',
       transactionHash: 'mockTransactionHash',
@@ -122,5 +126,19 @@ describe('MintService', () => {
     dto.imagePerceptualHash = 'mockImagePerceptualHash';
 
     await expect(service.createMint(dto)).rejects.toThrow(BadRequestException);
+  });
+
+  it('should generate a new tokenId based on total NFTs', async () => {
+    jest.spyOn(firmaService.getSDK().Cw721, 'getTotalNfts').mockResolvedValueOnce(5);
+
+    const dto = new MintRequestDto();
+    dto.imageHash = 'mockImageHash';
+    dto.imagePerceptualHash = 'mockImagePerceptualHash';
+    dto.imageUrl = 'https://example.com/image.jpg';
+
+    const result = await service.createMint(dto);
+
+    expect(result.tokenId).toBe('mockTokenId');
+    expect(firmaService.getSDK().Cw721.getTotalNfts).toHaveBeenCalled();
   });
 });

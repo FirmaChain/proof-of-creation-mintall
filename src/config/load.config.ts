@@ -17,10 +17,10 @@ interface LocalSecretJson {
   FIXED_JWT_TOKEN: string;
   DATABASE_HOST: string;
   DATABASE_PORT: number;
-  DATABASE_USERNAME: string;
+  DATABASE_USER: string;
   REDIS_HOST: string;
   REDIS_PORT: number;
-  REDIS_PASSWORD: string;
+  REDIS_PASSWORD?: string;
 }
 
 interface DefaultConfig {
@@ -32,7 +32,7 @@ interface DefaultConfig {
 interface SsmParameterJson {
   DATABASE_HOST: string;
   DATABASE_PORT: number;
-  DATABASE_USERNAME: string;
+  DATABASE_USER: string;
   REDIS_HOST: string;
   REDIS_PORT: number;
   REDIS_PASSWORD: string;
@@ -105,10 +105,9 @@ const loadLocalSecret = (): LocalSecretJson => {
     !process.env.FIXED_JWT_TOKEN ||
     !process.env.DATABASE_HOST ||
     !process.env.DATABASE_PORT ||
-    !process.env.DATABASE_USERNAME ||
+    !process.env.DATABASE_USER ||
     !process.env.REDIS_HOST ||
-    !process.env.REDIS_PORT ||
-    !process.env.REDIS_PASSWORD
+    !process.env.REDIS_PORT
   ) {
     throw new Error('Failed to load necessary secrets from local .env file.');
   }
@@ -118,10 +117,9 @@ const loadLocalSecret = (): LocalSecretJson => {
     FIXED_JWT_TOKEN: process.env.FIXED_JWT_TOKEN,
     DATABASE_HOST: process.env.DATABASE_HOST,
     DATABASE_PORT: parseInt(process.env.DATABASE_PORT),
-    DATABASE_USERNAME: process.env.DATABASE_USERNAME,
+    DATABASE_USER: process.env.DATABASE_USER,
     REDIS_HOST: process.env.REDIS_HOST,
     REDIS_PORT: parseInt(process.env.REDIS_PORT),
-    REDIS_PASSWORD: process.env.REDIS_PASSWORD,
   };
 };
 

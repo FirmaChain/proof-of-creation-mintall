@@ -8,7 +8,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: fig-devnet-server
+    runs-on: fig-devnet-action
     # if: github.ref == 'refs/heads/develop'
     environment: ${{ startsWith(github.ref, 'refs/tags/v') && !contains(github.ref, '-dev.') && 'production' || 'development' }}
     env:
@@ -75,7 +75,7 @@ jobs:
         with:
           host: ${{ secrets.DEV_SERVER_HOST }}
           username: ${{ secrets.DEV_SERVER_USER }}
-          key: ${{ secrets.DEV_SERVER_SSH_KEY }}
+          password: ${{ secrets.DEV_SERVER_PASSWORD }}
           envs: DEPLOY_TAG,ECR_URI,REPO_NAME,AWS_REGION,AWS_SECRET_NAME
           script: |
             echo "=== DEPLOYMENT STARTED ==="
@@ -127,7 +127,7 @@ jobs:
                 container_name: ${REPO_NAME}
                 restart: unless-stopped
                 ports:
-                  - "3000:3000"
+                  - "4000:3000"
                 env_file:
                   - .env
                 environment:
@@ -136,6 +136,12 @@ jobs:
                   - AWS_SECRET_NAME=${AWS_SECRET_NAME}
                 volumes:
                   - $HOME/.aws:/root/.aws
+                networks:
+                  - app-network
+              
+            networks:
+              app-network:
+                external: true 
             EOF
 
             # Container management

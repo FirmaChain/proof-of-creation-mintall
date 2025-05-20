@@ -24,7 +24,9 @@ export class MintService {
     this.firmaSDK = this.firmaService.getSDK();
   }
 
-  async createMint(body: MintRequestDto): Promise<string> {
+  async createMint(
+    body: MintRequestDto,
+  ): Promise<{ tokenId: string; transactionHash: string }> {
     try {
       // Get private key from secret manager
       const privateKey = this.configService.get<string>(
@@ -36,9 +38,7 @@ export class MintService {
       const walletAddress = this.configService.get<string>(
         'WALLET_ADDRESS',
       ) as string;
-
-      // token uri (TODO: 환경변수로 변경)
-      const tokenUri = 'https://images.app.goo.gl/it644rEhzNcvDXLSA';
+      const tokenUri = body.imageUrl;
 
       // check cache data
       const cacheData = await this.redisService.hgetall(
@@ -46,7 +46,10 @@ export class MintService {
       );
       if (cacheData && cacheData.tokenId) {
         this.logger.log(`DATA already exists in cache`);
-        return cacheData.tokenId;
+        return {
+          tokenId: cacheData.tokenId,
+          transactionHash: cacheData.transactionHash,
+        };
       }
 
       // check database data
@@ -55,23 +58,24 @@ export class MintService {
       });
       if (nftCertificate) {
         this.logger.log(`DATA already exists in database`);
-        return nftCertificate.tokenId;
+        return {
+          tokenId: nftCertificate.tokenId,
+          transactionHash: nftCertificate.transactionHash,
+        };
       }
 
       // wallet
       const wallet = await this.firmaSDK.Wallet.fromPrivateKey(privateKey);
 
-      // get all nft id list for calculate token id
-      const nftIdList =
-        await this.firmaSDK.Cw721.getAllNftIdList(contractAddress);
+      // get total nfts number for calculate token id
+      const totalNfts = await this.firmaSDK.Cw721.getTotalNfts(contractAddress);
       let newTokenId: number;
-      if (nftIdList.length === 0) {
+      if (totalNfts === 0) {
         newTokenId = 1;
       } else {
-        nftIdList.sort((a, b) => parseInt(a) - parseInt(b));
-        const maxId = parseInt(nftIdList[nftIdList.length - 1]);
-        newTokenId = maxId + 1;
+        newTokenId = totalNfts + 1;
       }
+      this.logger.log(`Total NFTs: ${totalNfts}, New Token ID: ${newTokenId}`);
 
       // mint
       const res = await this.firmaSDK.Cw721.mintWithExtension(
@@ -104,6 +108,7 @@ export class MintService {
       nftCertificateEntity.tokenId = tokenId;
       nftCertificateEntity.creatorName = body.creatorName || '';
       nftCertificateEntity.c2paMetadata = body.c2paMetadata || {};
+      nftCertificateEntity.transactionHash = res.transactionHash;
       await this.nftCertificateRepository.save(nftCertificateEntity);
       this.logger.log(`Save nft certificate in database`);
 
@@ -120,7 +125,10 @@ export class MintService {
       );
       this.logger.log('Set cache');
 
-      return tokenId;
+      return {
+        tokenId,
+        transactionHash: res.transactionHash,
+      };
     } catch (error) {
       this.logger.error(error);
       throw error;

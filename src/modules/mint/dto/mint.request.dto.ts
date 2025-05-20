@@ -1,4 +1,4 @@
-import { IsOptional, IsString, IsNotEmpty } from 'class-validator';
+import { IsOptional, IsString, IsNotEmpty, IsUrl } from 'class-validator';
 
 export class MintRequestDto {
   @IsString()
@@ -20,4 +20,18 @@ export class MintRequestDto {
   // @IsOptional()
   // @IsString()
   creatorName?: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @IsUrl(
+    {
+      protocols: ['http', 'https', 'ipfs'],
+      require_protocol: true,
+    },
+    {
+      message:
+        'imageUrl must be a valid URL with http, https, or ipfs protocol',
+    },
+  )
+  imageUrl: string;
 }
