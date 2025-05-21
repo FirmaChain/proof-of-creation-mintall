@@ -6,6 +6,7 @@ import Redis from 'ioredis';
 export class RedisService {
   private readonly logger = new Logger('RedisService');
   private readonly redis: Redis;
+  private readonly defaultTTL = 28800; // Default TTL is 8 hours
 
   constructor(private readonly redisClient: RedisClient) {
     this.redis = this.redisClient.getOrThrow();
@@ -17,8 +18,9 @@ export class RedisService {
     });
   }
 
-  async set(key: string, value: string) {
-    return await this.redis.set(key, value);
+  async set(key: string, value: string, ttl?: number) {
+    const expiration = ttl || this.defaultTTL;
+    return await this.redis.set(key, value, 'EX', expiration);
   }
 
   async get(key: string) {
