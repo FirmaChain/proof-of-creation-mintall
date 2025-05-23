@@ -35,6 +35,9 @@ import { entityList } from './modules/entities';
           database,
           logging: true,
           synchronize: false,
+          ssl: {
+            rejectUnauthorized: false,
+          },
           entities: [...entityList],
         };
       },
