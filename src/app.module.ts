@@ -33,7 +33,7 @@ import { entityList } from './modules/entities';
           username,
           password,
           database,
-          logging: true,
+          logging: process.env.NODE_ENV !== 'production' ? true : false,
           synchronize: false,
           ssl: {
             rejectUnauthorized: false,
