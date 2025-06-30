@@ -91,14 +91,13 @@ export class MintService {
       );
 
       // check mint result
-      if (!res || res.code !== 0 || !res.rawLog || res.rawLog.length === 0) {
-        this.logger.error(res.rawLog);
+      if (!res || res.code !== 0 || !res.events || res.events.length === 0) {
+        this.logger.error(res.events);
         throw new BadRequestException('NFT mint failed');
       }
 
       // parse rawLog
-      const rawLog = JSON.parse(res.rawLog) as RowLog;
-      const tokenId = rawLog[0].events[2].attributes[4].value;
+      const tokenId = res.events[9].attributes[4].value;
 
       // save nft certificate in database
       const nftCertificateEntity = new NFTCertificateEntity();
