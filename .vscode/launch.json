@@ -5,7 +5,7 @@
       "type": "node",
       "request": "launch",
       "name": "NestJS Debug",
-      "runtimeExecutable": "yarn",
+      "runtimeExecutable": "${workspaceFolder}/.yarn/releases/yarn-4.6.0.cjs",
       "runtimeArgs": ["start:debug"],
       "sourceMaps": true,
       "cwd": "${workspaceFolder}",

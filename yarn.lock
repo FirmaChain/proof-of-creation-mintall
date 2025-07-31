@@ -1270,9 +1270,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@firmachain/firma-js@npm:0.3.7-beta2":
-  version: 0.3.7-beta2
-  resolution: "@firmachain/firma-js@npm:0.3.7-beta2"
+"@firmachain/firma-js@npm:0.3.7-beta3":
+  version: 0.3.7-beta3
+  resolution: "@firmachain/firma-js@npm:0.3.7-beta3"
   dependencies:
     "@cosmjs/amino": "npm:0.34.0"
     "@cosmjs/math": "npm:0.34.0"
@@ -1291,7 +1291,7 @@ __metadata:
     pako: "npm:2.0.2"
     protobufjs: "npm:6.10.2"
     readline-sync: "npm:1.4.10"
-  checksum: 10c0/b04b7dd8907cd8e6d49194a8d7ea4648c48a962c1cd85bffe68fc991d9ced7253df6e4f5ebf8cf73d139c9e75e307ded26524214eab937d6bb660a1b2fc4cc93
+  checksum: 10c0/da03f5cc627cb69ca30189a3eb35f3f2a589363034587d03903f13cb2b789c2e2ce1e10d61b7992347846061111bb006a655a0cb6d376f31960d1b260ef87c8a
   languageName: node
   linkType: hard
 
@@ -10021,7 +10021,7 @@ __metadata:
     "@aws-sdk/client-ssm": "npm:^3.750.0"
     "@eslint/eslintrc": "npm:^3.2.0"
     "@eslint/js": "npm:^9.18.0"
-    "@firmachain/firma-js": "npm:0.3.7-beta2"
+    "@firmachain/firma-js": "npm:0.3.7-beta3"
     "@liaoliaots/nestjs-redis": "npm:^10.0.0"
     "@nestjs/cli": "npm:^11.0.0"
     "@nestjs/common": "npm:^11.0.1"
