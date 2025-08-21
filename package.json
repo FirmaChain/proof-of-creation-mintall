@@ -24,7 +24,7 @@
     "@aws-sdk/client-kms": "^3.750.0",
     "@aws-sdk/client-secrets-manager": "^3.750.0",
     "@aws-sdk/client-ssm": "^3.750.0",
-    "@firmachain/firma-js": "0.2.64",
+    "@firmachain/firma-js": "0.3.7",
     "@liaoliaots/nestjs-redis": "^10.0.0",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.0",
