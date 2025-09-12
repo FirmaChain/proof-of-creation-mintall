@@ -6197,6 +6197,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"dayjs@npm:^1.11.18":
+  version: 1.11.18
+  resolution: "dayjs@npm:1.11.18"
+  checksum: 10c0/83b67f5d977e2634edf4f5abdd91d9041a696943143638063016915d2cd8c7e57e0751e40379a07ebca8be7a48dd380bef8752d22a63670f2d15970e34f96d7a
+  languageName: node
+  linkType: hard
+
 "dayjs@npm:^1.11.9":
   version: 1.11.13
   resolution: "dayjs@npm:1.11.13"
@@ -10050,6 +10057,7 @@ __metadata:
     aws-sdk: "npm:^2.1692.0"
     class-transformer: "npm:^0.5.1"
     class-validator: "npm:^0.14.1"
+    dayjs: "npm:^1.11.18"
     dotenv: "npm:^16.4.7"
     eslint: "npm:^9.18.0"
     eslint-config-prettier: "npm:^10.0.1"
