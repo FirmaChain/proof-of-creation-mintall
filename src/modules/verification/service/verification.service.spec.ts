@@ -6,6 +6,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { NFTCertificateEntity } from '../../../modules/entities/nft.certificate.entity';
 import { VerificationRequestDto } from '../dto/verification.request.dto';
 import { NotFoundException } from '@nestjs/common';
+import { CertificateStatus } from '../../../common/constants/service.constants';
 
 describe('VerificationService', () => {
   let service: VerificationService;
@@ -52,9 +53,10 @@ describe('VerificationService', () => {
 
     jest
       .spyOn(redisService, 'hgetall')
-      .mockResolvedValueOnce({ 
+      .mockResolvedValueOnce({
         tokenId: 'mockTokenId',
-        transactionHash: 'mockTransactionHash'
+        transactionHash: 'mockTransactionHash',
+        certificatedTime: '2025-01-15T00:00:00.000Z'
       });
 
     const result = await service.checkVerification(dto);
@@ -62,7 +64,9 @@ describe('VerificationService', () => {
     expect(redisService.hgetall).toHaveBeenCalledWith(`image:${dto.value}`);
     expect(result).toEqual({
       tokenId: 'mockTokenId',
-      transactionHash: 'mockTransactionHash'
+      transactionHash: 'mockTransactionHash',
+      certificatedTime: '2025-01-15T00:00:00.000Z',
+      status: CertificateStatus.Existing
     });
   });
 
@@ -75,8 +79,9 @@ describe('VerificationService', () => {
     jest.spyOn(nftCertificateRepository, 'findOne').mockResolvedValueOnce({
       tokenId: 'mockDbTokenId',
       transactionHash: 'mockDbTransactionHash',
-      imageHash: 'mockImageHash'
-    } as NFTCertificateEntity);
+      imageHash: 'mockImageHash',
+      createdAt: new Date('2025-01-15T00:00:00.000Z')
+    } as unknown as NFTCertificateEntity);
 
     const result = await service.checkVerification(dto);
 
@@ -85,7 +90,9 @@ describe('VerificationService', () => {
     });
     expect(result).toEqual({
       tokenId: 'mockDbTokenId',
-      transactionHash: 'mockDbTransactionHash'
+      transactionHash: 'mockDbTransactionHash',
+      certificatedTime: '2025-01-15T00:00:00.000Z',
+      status: CertificateStatus.Existing
     });
   });
 
