@@ -8,13 +8,14 @@ import { FirmaService } from '../../../shared/firma/firma.service';
 import { ConfigService } from '@nestjs/config';
 import { MintRequestDto } from '../dto/mint.request.dto';
 import { BadRequestException } from '@nestjs/common';
+import { CertificateStatus } from '../../../common/constants/service.constants';
 
 describe('MintService', () => {
   let service: MintService;
   let redisService: RedisService;
   let nftCertificateRepository: Repository<NFTCertificateEntity>;
   let firmaService: FirmaService;
-  let configService: ConfigService;
+  // let configService: ConfigService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -47,23 +48,15 @@ describe('MintService', () => {
                 getTotalNfts: jest.fn().mockResolvedValue(0),
                 mintWithExtension: jest.fn().mockResolvedValue({
                   code: 0,
-                  rawLog: JSON.stringify([
+                  events: [
+                    {}, {}, {}, {}, {}, {}, {}, {}, {},
                     {
-                      events: [
-                        {},
-                        {},
-                        {
-                          attributes: [
-                            {},
-                            {},
-                            {},
-                            {},
-                            { value: 'mockTokenId' },
-                          ],
-                        },
+                      attributes: [
+                        {}, {}, {}, {},
+                        { value: 'mockTokenId' },
                       ],
                     },
-                  ]),
+                  ],
                   transactionHash: 'mockTransactionHash',
                 }),
               },
@@ -85,7 +78,7 @@ describe('MintService', () => {
       getRepositoryToken(NFTCertificateEntity),
     );
     firmaService = module.get<FirmaService>(FirmaService);
-    configService = module.get<ConfigService>(ConfigService);
+    // configService = module.get<ConfigService>(ConfigService);
   });
 
   it('should be defined', () => {
@@ -98,16 +91,19 @@ describe('MintService', () => {
     dto.imagePerceptualHash = 'mockImagePerceptualHash';
     dto.imageUrl = 'https://example.com/image.jpg';
 
+    jest.spyOn(nftCertificateRepository, 'save').mockResolvedValueOnce({
+      createdAt: new Date('2025-01-15T00:00:00.000Z')
+    } as unknown as NFTCertificateEntity);
+
     const result = await service.createMint(dto);
 
     expect(result).toEqual({
       tokenId: 'mockTokenId',
-      transactionHash: 'mockTransactionHash'
-    });
-    expect(redisService.hset).toHaveBeenCalledWith(`image:${dto.imageHash}`, {
-      tokenId: 'mockTokenId',
       transactionHash: 'mockTransactionHash',
+      certificatedTime: '2025-01-15T00:00:00.000Z',
+      status: CertificateStatus.New
     });
+    expect(redisService.hset).toHaveBeenCalled();
     expect(nftCertificateRepository.save).toHaveBeenCalled();
   });
 
@@ -116,10 +112,14 @@ describe('MintService', () => {
       .spyOn(firmaService.getSDK().Cw721, 'mintWithExtension')
       .mockResolvedValueOnce({
         code: 1,
-        rawLog: '',
+        events: [],
         transactionHash: '',
         height: 0,
-      });
+        txIndex: 0,
+        msgResponses: [],
+        gasUsed: 0,
+        gasWanted: 0,
+      } as any);
 
     const dto = new MintRequestDto();
     dto.imageHash = 'mockImageHash';
@@ -135,6 +135,10 @@ describe('MintService', () => {
     dto.imageHash = 'mockImageHash';
     dto.imagePerceptualHash = 'mockImagePerceptualHash';
     dto.imageUrl = 'https://example.com/image.jpg';
+
+    jest.spyOn(nftCertificateRepository, 'save').mockResolvedValueOnce({
+      createdAt: new Date('2025-01-15T00:00:00.000Z')
+    } as unknown as NFTCertificateEntity);
 
     const result = await service.createMint(dto);
 

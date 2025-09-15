@@ -7,7 +7,7 @@ import { NFTCertificateEntity } from '../../../modules/entities/nft.certificate.
 import { FirmaService } from '../../../shared/firma/firma.service';
 import { FirmaSDK } from '@firmachain/firma-js';
 import { ConfigService } from '@nestjs/config';
-import { CertificateStatus } from 'src/common/constants/service.constants';
+import { CertificateStatus } from '../../../common/constants/service.constants';
 import dayjs from 'dayjs';
 
 @Injectable()
