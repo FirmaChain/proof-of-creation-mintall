@@ -26,6 +26,8 @@ import { entityList } from './modules/entities';
         const username = configService.get<string>('DATABASE_USER');
         const password = configService.get<string>('DATABASE_PASSWORD');
         const database = configService.get<string>('DATABASE_NAME');
+        const isProduction = process.env.NODE_ENV === 'production';
+
         return {
           type: 'postgres',
           host,
@@ -33,11 +35,9 @@ import { entityList } from './modules/entities';
           username,
           password,
           database,
-          logging: process.env.NODE_ENV !== 'production' ? true : false,
+          logging: !isProduction,
           synchronize: false,
-          ssl: {
-            rejectUnauthorized: false,
-          },
+          ssl: isProduction ? true : false,
           entities: [...entityList],
         };
       },

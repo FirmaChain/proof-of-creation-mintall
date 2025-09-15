@@ -4,6 +4,8 @@ import { NFTCertificateEntity } from '../../../modules/entities/nft.certificate.
 import { RedisService } from '../../../shared/redis/redis.service';
 import { Repository } from 'typeorm';
 import { VerificationRequestDto } from '../dto/verification.request.dto';
+import { CertificateStatus } from '../../../common/constants/service.constants';
+import dayjs from 'dayjs';
 
 @Injectable()
 export class VerificationService {
@@ -15,9 +17,12 @@ export class VerificationService {
     private nftCertificateRepository: Repository<NFTCertificateEntity>,
   ) {}
 
-  async checkVerification(
-    param: VerificationRequestDto,
-  ): Promise<{ tokenId: string; transactionHash: string } | null> {
+  async checkVerification(param: VerificationRequestDto): Promise<{
+    tokenId: string;
+    transactionHash: string;
+    certificatedTime: string;
+    status: CertificateStatus;
+  } | null> {
     try {
       const searchKey = param.key;
       const searchValue = param.value;
@@ -37,6 +42,8 @@ export class VerificationService {
         return {
           tokenId: cacheData.tokenId,
           transactionHash: cacheData.transactionHash,
+          certificatedTime: cacheData.certificatedTime,
+          status: CertificateStatus.Existing,
         };
       }
 
@@ -49,11 +56,16 @@ export class VerificationService {
       if (nftCertificate) {
         this.logger.log(`DATA already exists in database`);
         this.logger.log(`Reset cache data`);
-        // set the data in the cache
-        await this.redisService.hset(`image:${nftCertificate.imageHash}`, {
-          tokenId: nftCertificate.tokenId,
-          transactionHash: nftCertificate.transactionHash,
-        });
+        // set the data in the cache with 8 hours TTL
+        await this.redisService.hset(
+          `image:${nftCertificate.imageHash}`,
+          {
+            tokenId: nftCertificate.tokenId,
+            transactionHash: nftCertificate.transactionHash,
+            certificatedTime: dayjs(nftCertificate.createdAt).toISOString(),
+          },
+          28800, // 8 hours TTL
+        );
         // make index
         await this.redisService.set(
           `image:index:${nftCertificate.tokenId}`,
@@ -66,6 +78,8 @@ export class VerificationService {
         return {
           tokenId: nftCertificate.tokenId,
           transactionHash: nftCertificate.transactionHash,
+          certificatedTime: dayjs(nftCertificate.createdAt).toISOString(),
+          status: CertificateStatus.Existing,
         };
       }
 
