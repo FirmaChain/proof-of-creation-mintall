@@ -31,8 +31,13 @@ export class RedisService {
     return await this.redis.del(key);
   }
 
-  async hset(key: string, fields: Record<string, string>) {
-    return await this.redis.hset(key, fields);
+  async hset(key: string, fields: Record<string, string>, ttl?: number) {
+    const result = await this.redis.hset(key, fields);
+    if (ttl) {
+      const expiration = ttl || this.defaultTTL;
+      await this.redis.expire(key, expiration);
+    }
+    return result;
   }
 
   async hget(key: string, field: string) {
