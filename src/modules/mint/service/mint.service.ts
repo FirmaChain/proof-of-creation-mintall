@@ -6,8 +6,9 @@ import { RedisService } from '../../../shared/redis/redis.service';
 import { NFTCertificateEntity } from '../../../modules/entities/nft.certificate.entity';
 import { FirmaService } from '../../../shared/firma/firma.service';
 import { FirmaSDK } from '@firmachain/firma-js';
-import { RowLog } from '../interface/mint.interface';
 import { ConfigService } from '@nestjs/config';
+import { CertificateStatus } from 'src/common/constants/service.constants';
+import dayjs from 'dayjs';
 
 @Injectable()
 export class MintService {
@@ -24,9 +25,12 @@ export class MintService {
     this.firmaSDK = this.firmaService.getSDK();
   }
 
-  async createMint(
-    body: MintRequestDto,
-  ): Promise<{ tokenId: string; transactionHash: string }> {
+  async createMint(body: MintRequestDto): Promise<{
+    tokenId: string;
+    transactionHash: string;
+    certificatedTime: string;
+    status: CertificateStatus;
+  }> {
     try {
       // Get private key from secret manager
       const privateKey = this.configService.get<string>(
@@ -49,6 +53,8 @@ export class MintService {
         return {
           tokenId: cacheData.tokenId,
           transactionHash: cacheData.transactionHash,
+          certificatedTime: cacheData.certificatedTime,
+          status: CertificateStatus.Existing,
         };
       }
 
@@ -61,6 +67,8 @@ export class MintService {
         return {
           tokenId: nftCertificate.tokenId,
           transactionHash: nftCertificate.transactionHash,
+          certificatedTime: dayjs(nftCertificate.createdAt).toISOString(),
+          status: CertificateStatus.Existing,
         };
       }
 
@@ -108,13 +116,15 @@ export class MintService {
       nftCertificateEntity.creatorName = body.creatorName || '';
       nftCertificateEntity.c2paMetadata = body.c2paMetadata || {};
       nftCertificateEntity.transactionHash = res.transactionHash;
-      await this.nftCertificateRepository.save(nftCertificateEntity);
+      const dbRes =
+        await this.nftCertificateRepository.save(nftCertificateEntity);
       this.logger.log(`Save nft certificate in database`);
 
       // hset cache
       await this.redisService.hset(`image:${body.imageHash}`, {
         tokenId,
         transactionHash: res.transactionHash,
+        certificatedTime: dayjs(dbRes.createdAt).toISOString(),
       });
       // make index
       await this.redisService.set(`image:index:${tokenId}`, body.imageHash);
@@ -127,6 +137,8 @@ export class MintService {
       return {
         tokenId,
         transactionHash: res.transactionHash,
+        certificatedTime: dayjs(dbRes.createdAt).toISOString(),
+        status: CertificateStatus.New,
       };
     } catch (error) {
       this.logger.error(error);
