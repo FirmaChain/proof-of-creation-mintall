@@ -56,12 +56,16 @@ export class VerificationService {
       if (nftCertificate) {
         this.logger.log(`DATA already exists in database`);
         this.logger.log(`Reset cache data`);
-        // set the data in the cache
-        await this.redisService.hset(`image:${nftCertificate.imageHash}`, {
-          tokenId: nftCertificate.tokenId,
-          transactionHash: nftCertificate.transactionHash,
-          certificatedTime: dayjs(nftCertificate.createdAt).toISOString(),
-        });
+        // set the data in the cache with 8 hours TTL
+        await this.redisService.hset(
+          `image:${nftCertificate.imageHash}`,
+          {
+            tokenId: nftCertificate.tokenId,
+            transactionHash: nftCertificate.transactionHash,
+            certificatedTime: dayjs(nftCertificate.createdAt).toISOString(),
+          },
+          28800, // 8 hours TTL
+        );
         // make index
         await this.redisService.set(
           `image:index:${nftCertificate.tokenId}`,

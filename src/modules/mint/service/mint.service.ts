@@ -120,12 +120,16 @@ export class MintService {
         await this.nftCertificateRepository.save(nftCertificateEntity);
       this.logger.log(`Save nft certificate in database`);
 
-      // hset cache
-      await this.redisService.hset(`image:${body.imageHash}`, {
-        tokenId,
-        transactionHash: res.transactionHash,
-        certificatedTime: dayjs(dbRes.createdAt).toISOString(),
-      });
+      // hset cache with 8 hours TTL
+      await this.redisService.hset(
+        `image:${body.imageHash}`,
+        {
+          tokenId,
+          transactionHash: res.transactionHash,
+          certificatedTime: dayjs(dbRes.createdAt).toISOString(),
+        },
+        28800, // 8 hours TTL
+      );
       // make index
       await this.redisService.set(`image:index:${tokenId}`, body.imageHash);
       await this.redisService.set(
