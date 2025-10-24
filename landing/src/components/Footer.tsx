@@ -16,9 +16,9 @@ const Footer: React.FC = () => {
 
   const footerLinks = {
     documentation: [
-      { name: 'API Documentation', href: 'https://github.com/FirmaChain/mintall-nft-cert-api/blob/main/landing/API_USAGE_EXAMPLES.md', external: true },
-      { name: 'GitHub Repository', href: 'https://github.com/FirmaChain/mintall-nft-cert-api', external: true },
-      { name: 'README', href: 'https://github.com/FirmaChain/mintall-nft-cert-api/blob/main/README.md', external: true },
+      { name: 'API Documentation', href: 'https://github.com/FirmaChain/proof-of-creation-mintall/blob/main/landing/API_USAGE_EXAMPLES.md', external: true },
+      { name: 'GitHub Repository', href: 'https://github.com/FirmaChain/proof-of-creation-mintall', external: true },
+      { name: 'README', href: 'https://github.com/FirmaChain/proof-of-creation-mintall/blob/main/README.md', external: true },
     ],
     resources: [
       { name: 'Proof of Creation Blog', href: 'https://www.mintall.ai/blog/proof-of-creation', external: true },

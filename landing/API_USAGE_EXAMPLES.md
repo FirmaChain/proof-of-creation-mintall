@@ -2,7 +2,7 @@
 
 > **Open Source Project by Firmachain**
 > This is an open source project developed and maintained by Firmachain.
-> GitHub: https://github.com/FirmaChain/mintall-nft-cert-api
+> GitHub: https://github.com/FirmaChain/proof-of-creation-mintall
 
 ## Overview
 
@@ -682,6 +682,6 @@ This is an open source project developed by Firmachain.
 
 For API support and questions:
 - Documentation: https://mintall-api.firmachain.dev/docs
-- GitHub: https://github.com/FirmaChain/mintall-nft-cert-api
+- GitHub: https://github.com/FirmaChain/proof-of-creation-mintall
 - Email: info@firmachain.org
 - Website: https://firmachain.org

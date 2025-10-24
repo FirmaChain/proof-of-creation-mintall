@@ -10019,9 +10019,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mintall-nft-cert-api@workspace:.":
+"proof-of-creation-mintall@workspace:.":
   version: 0.0.0-use.local
-  resolution: "mintall-nft-cert-api@workspace:."
+  resolution: "proof-of-creation-mintall@workspace:."
   dependencies:
     "@aws-sdk/client-kms": "npm:^3.750.0"
     "@aws-sdk/client-secrets-manager": "npm:^3.750.0"

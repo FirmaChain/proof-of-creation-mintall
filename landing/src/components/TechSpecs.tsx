@@ -178,7 +178,7 @@ console.log('Verification Result:', verificationResult.data);`}</code>
           className="text-center mt-12"
         >
           <a
-            href="https://github.com/FirmaChain/mintall-nft-cert-api/blob/main/API%20specification.md"
+            href="https://github.com/FirmaChain/proof-of-creation-mintall/blob/main/API%20specification.md"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-lg font-semibold hover:from-primary-700 hover:to-primary-800 transition-all transform hover:scale-105"

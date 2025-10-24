@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-`mintall-nft-cert-api` is an API for NFT minting and verification, built using the NestJS framework and supporting the CW721 standard on the Firmachain blockchain.
+`proof-of-creation-mintall` is an API for NFT minting and verification, built using the NestJS framework and supporting the CW721 standard on the Firmachain blockchain.
 
 ## Technology Stack
 

@@ -15,8 +15,8 @@ const Header: React.FC<HeaderProps> = ({ scrolled }) => {
     { name: 'Technology', href: '#technology' },
     { name: 'Use Cases', href: '#use-cases' },
     { name: 'Roadmap', href: '#roadmap' },
-    { name: 'API Docs', href: 'https://github.com/FirmaChain/mintall-nft-cert-api/blob/main/landing/API_USAGE_EXAMPLES.md', external: true },
-    { name: 'GitHub', href: 'https://github.com/FirmaChain/mintall-nft-cert-api', external: true },
+    { name: 'API Docs', href: 'https://github.com/FirmaChain/proof-of-creation-mintall/blob/main/landing/API_USAGE_EXAMPLES.md', external: true },
+    { name: 'GitHub', href: 'https://github.com/FirmaChain/proof-of-creation-mintall', external: true },
   ]
 
   return (
@@ -55,7 +55,7 @@ const Header: React.FC<HeaderProps> = ({ scrolled }) => {
                 </a>
               ))}
               <a
-                href="https://github.com/FirmaChain/mintall-nft-cert-api/blob/main/landing/API_USAGE_EXAMPLES.md"
+                href="https://github.com/FirmaChain/proof-of-creation-mintall/blob/main/landing/API_USAGE_EXAMPLES.md"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="ml-4 px-4 py-2 bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-lg font-medium hover:from-primary-700 hover:to-primary-800 transition-all transform hover:scale-105"
@@ -98,7 +98,7 @@ const Header: React.FC<HeaderProps> = ({ scrolled }) => {
                 </a>
               ))}
               <a
-                href="https://github.com/FirmaChain/mintall-nft-cert-api/blob/main/landing/API_USAGE_EXAMPLES.md"
+                href="https://github.com/FirmaChain/proof-of-creation-mintall/blob/main/landing/API_USAGE_EXAMPLES.md"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full mt-2 px-4 py-2 bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-lg font-medium hover:from-primary-700 hover:to-primary-800 transition-all block text-center"
