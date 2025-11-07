@@ -28,6 +28,12 @@ interface DefaultConfig {
   PRIVATE_KEY: string;
   DATABASE_PASSWORD: string;
   FIXED_JWT_TOKEN: string;
+  DATABASE_HOST: string;
+  DATABASE_PORT: number;
+  DATABASE_USER: string;
+  REDIS_HOST: string;
+  REDIS_PORT: number;
+  REDIS_PASSWORD?: string;
 }
 
 interface SsmParameterJson {
@@ -49,20 +55,7 @@ export const initConfig = async () => {
       // CASE 1
       logger.log('Loading secrets from system');
       const secretData = loadSystemSecret();
-      defaultConfig = {
-        PRIVATE_KEY: secretData.PRIVATE_KEY,
-        DATABASE_PASSWORD: secretData.DATABASE_PASSWORD,
-        FIXED_JWT_TOKEN: secretData.FIXED_JWT_TOKEN,
-      };
-    } else if (process.env.ENV_FROM === 'file') {
-      // CASE 2
-      logger.log('Loading secrets from file');
-      const secretData = loadFileSecret();
-      defaultConfig = {
-        PRIVATE_KEY: secretData.PRIVATE_KEY,
-        DATABASE_PASSWORD: secretData.DATABASE_PASSWORD,
-        FIXED_JWT_TOKEN: secretData.FIXED_JWT_TOKEN,
-      };
+      defaultConfig = secretData;
     } else if (process.env.ENV_FROM === 'aws') {
       // CASE 3
       logger.log('Loading secrets from AWS secret manager...');
@@ -76,7 +69,13 @@ export const initConfig = async () => {
         ...ssmConfig,
       };
     } else {
-      throw new Error('Invalid ENV_FROM');
+      // CASE 2: From file (default mode if ENV_FROM not set)
+      if (!process.env.ENV_FROM) {
+        logger.warn('ENV_FROM not set, defaulting to file mode');
+      }
+      logger.log(`Loading secrets from ${process.env.ENV_FROM || 'file'}`);
+      const secretData = loadFileSecret();
+      defaultConfig = secretData;
     }
   } catch (error) {
     logger.error(error);
@@ -112,7 +111,7 @@ const loadSystemSecret = (): LocalSecretJson => {
 
 // CASE 2: From file, ENV_FROM = file
 const loadFileSecret = () => {
-  let filePath = '.env';
+  let filePath = 'config/.env';
   if (process.env.ENV_FILE_PATH) {
     filePath = process.env.ENV_FILE_PATH;
   }

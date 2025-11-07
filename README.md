@@ -31,11 +31,18 @@ DATABASE_PASSWORD=your_password
 ```
 
 #### 2. `ENV_FROM=file`
-Load configuration from a specific file path. If `ENV_FILE_PATH` is not set, defaults to `.env`.
+Load configuration from a specific file path. If `ENV_FILE_PATH` is not set, defaults to `config/.env`.
 
+First, copy the example file:
 ```bash
-ENV_FROM=file
-ENV_FILE_PATH=config/.env.development  # Optional, defaults to .env if not specified
+cp config/.env.example config/.env
+```
+
+Then fill in your configuration values and run:
+```bash
+ENV_FROM=file yarn start:dev
+# Or specify a custom path:
+ENV_FROM=file ENV_FILE_PATH=config/.env.development yarn start:dev
 ```
 
 #### 3. `ENV_FROM=aws`
