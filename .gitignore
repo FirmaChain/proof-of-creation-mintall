@@ -62,3 +62,6 @@ CHANGELOG.md
 
 # Claude
 .claude/
+
+# Yarn
+.yarn/install-state.gz
