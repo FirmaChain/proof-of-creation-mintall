@@ -5,6 +5,7 @@ import {
 } from '@aws-sdk/client-secrets-manager';
 import { KMSClient, DecryptCommand } from '@aws-sdk/client-kms';
 import { GetParameterCommand, SSMClient } from '@aws-sdk/client-ssm';
+import { configDotenv } from 'dotenv';
 interface AwsSecretJson {
   ENCRYPT_PRIVATE_KEY: string;
   DATABASE_PASSWORD: string;
@@ -44,8 +45,26 @@ const logger = new Logger('Config load');
 
 export const initConfig = async () => {
   try {
-    // Load the secret data
-    if (process.env.NODE_ENV !== 'local') {
+    if (process.env.ENV_FROM === 'system') {
+      // CASE 1
+      logger.log('Loading secrets from system');
+      const secretData = loadSystemSecret();
+      defaultConfig = {
+        PRIVATE_KEY: secretData.PRIVATE_KEY,
+        DATABASE_PASSWORD: secretData.DATABASE_PASSWORD,
+        FIXED_JWT_TOKEN: secretData.FIXED_JWT_TOKEN,
+      };
+    } else if (process.env.ENV_FROM === 'file') {
+      // CASE 2
+      logger.log('Loading secrets from file');
+      const secretData = loadFileSecret();
+      defaultConfig = {
+        PRIVATE_KEY: secretData.PRIVATE_KEY,
+        DATABASE_PASSWORD: secretData.DATABASE_PASSWORD,
+        FIXED_JWT_TOKEN: secretData.FIXED_JWT_TOKEN,
+      };
+    } else if (process.env.ENV_FROM === 'aws') {
+      // CASE 3
       logger.log('Loading secrets from AWS secret manager...');
       const secretData = await loadAwsSecret();
       const privateKey = await decryptSecret(secretData.ENCRYPT_PRIVATE_KEY);
@@ -57,14 +76,7 @@ export const initConfig = async () => {
         ...ssmConfig,
       };
     } else {
-      // load local secret
-      logger.log('Loading secrets from local .env file...');
-      const secretData = loadLocalSecret();
-      defaultConfig = {
-        PRIVATE_KEY: secretData.PRIVATE_KEY,
-        DATABASE_PASSWORD: secretData.DATABASE_PASSWORD,
-        FIXED_JWT_TOKEN: secretData.FIXED_JWT_TOKEN,
-      };
+      throw new Error('Invalid ENV_FROM');
     }
   } catch (error) {
     logger.error(error);
@@ -72,33 +84,8 @@ export const initConfig = async () => {
   }
 };
 
-// const load config from ssm
-const loadSsmConfig = async (parameterName: string | undefined) => {
-  try {
-    if (!parameterName) {
-      throw new Error('AWS SSM name is required.');
-    }
-    const client = new SSMClient({
-      region: process.env.AWS_REGION || 'ap-southeast-1',
-    });
-    const command = new GetParameterCommand({
-      Name: parameterName,
-      WithDecryption: false,
-    });
-    const response = await client.send(command);
-    if (!response.Parameter?.Value) {
-      throw new Error('Failed to load config from ssm.');
-    }
-    const result = JSON.parse(response.Parameter.Value) as SsmParameterJson;
-    return result;
-  } catch (error) {
-    console.error('Error getting parameter:', error);
-    throw error;
-  }
-};
-
-// load local secret when NODE_ENV is local
-const loadLocalSecret = (): LocalSecretJson => {
+// CASE 1: From system, ENV_FROM = system
+const loadSystemSecret = (): LocalSecretJson => {
   if (
     !process.env.PRIVATE_KEY ||
     !process.env.DATABASE_PASSWORD ||
@@ -123,7 +110,47 @@ const loadLocalSecret = (): LocalSecretJson => {
   };
 };
 
-// load aws secret when NODE_ENV is not local
+// CASE 2: From file, ENV_FROM = file
+const loadFileSecret = () => {
+  let filePath = '.env';
+  if (process.env.ENV_FILE_PATH) {
+    filePath = process.env.ENV_FILE_PATH;
+  }
+  const result = configDotenv({
+    path: filePath,
+  });
+  if (result.error) {
+    throw new Error('Failed to load file secret.');
+  }
+  return result.parsed as unknown as LocalSecretJson;
+};
+
+// CASE 3.1: From AWS SSM, ENV_FROM = aws
+const loadSsmConfig = async (parameterName: string | undefined) => {
+  try {
+    if (!parameterName) {
+      throw new Error('AWS SSM name is required.');
+    }
+    const client = new SSMClient({
+      region: process.env.AWS_REGION || 'ap-southeast-1',
+    });
+    const command = new GetParameterCommand({
+      Name: parameterName,
+      WithDecryption: false,
+    });
+    const response = await client.send(command);
+    if (!response.Parameter?.Value) {
+      throw new Error('Failed to load config from ssm.');
+    }
+    const result = JSON.parse(response.Parameter.Value) as SsmParameterJson;
+    return result;
+  } catch (error) {
+    console.error('Error getting parameter:', error);
+    throw error;
+  }
+};
+
+// CASE 3.2: From AWS Secret Manager, ENV_FROM = aws
 const loadAwsSecret = async (): Promise<AwsSecretJson> => {
   try {
     const secretName = process.env.AWS_SECRET_NAME as string;
@@ -155,7 +182,7 @@ const loadAwsSecret = async (): Promise<AwsSecretJson> => {
   }
 };
 
-// decrypt secret with aws kms
+// For CASE 3: decrypt secret with aws kms
 const decryptSecret = async (
   encryptedSecret: string,
 ): Promise<string | null> => {

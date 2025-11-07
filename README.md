@@ -16,34 +16,42 @@
 
 ## Environment Variables
 
-### Local Environment
+### Configuration Loading (`ENV_FROM`)
 
-Create a `.env` file in the root directory of the project and add the following environment variables:
+The application supports three configuration loading modes via the `ENV_FROM` environment variable:
 
-```plaintext
-# Database Configuration
+#### 1. `ENV_FROM=system`
+Load all configuration from system environment variables or root `.env` file.
+
+```bash
+ENV_FROM=system
 DATABASE_HOST=localhost
-DATABASE_PORT=5432
-DATABASE_USER=your_db_user
-DATABASE_PASSWORD=your_db_password
-DATABASE_NAME=your_db_name
-
-# Redis Configuration
-REDIS_HOST=localhost
-REDIS_PORT=6379
-REDIS_PASSWORD=your_redis_password
-
-# JWT Configuration
-JWT_SECRET=your_jwt_secret
-
-# Other Configuration
-NODE_ENV=development
-PORT=3000
+DATABASE_PASSWORD=your_password
+# ... all other required variables
 ```
 
-### Development & Production Environment (Get from AWS Secrets Manager)
+#### 2. `ENV_FROM=file`
+Load configuration from a specific file path. If `ENV_FILE_PATH` is not set, defaults to `.env`.
 
-Use `ecosystem.config.js` to start with {env}.
+```bash
+ENV_FROM=file
+ENV_FILE_PATH=config/.env.development  # Optional, defaults to .env if not specified
+```
+
+#### 3. `ENV_FROM=aws`
+Load configuration from AWS Secrets Manager and SSM Parameter Store (for production).
+
+```bash
+ENV_FROM=aws
+AWS_REGION=ap-southeast-1
+AWS_SECRET_NAME=/dev/mintall-nft-cert-api
+```
+
+### Local Development Setup
+
+1. Copy `.env.example` to `.env`
+2. Set `ENV_FROM=system` and configure your database/redis settings
+3. Run `yarn start:debug`
 
 ## Installation
 
