@@ -56,7 +56,11 @@ export const initConfig = async () => {
       logger.log('Loading secrets from system');
       const secretData = loadSystemSecret();
       defaultConfig = secretData;
-      console.log('defaultConfig', defaultConfig)
+    } else if (process.env.ENV_FROM === 'file') {
+      // CASE 2
+      logger.log('Loading secrets from file');
+      const secretData = loadFileSecret();
+      defaultConfig = secretData;
     } else if (process.env.ENV_FROM === 'aws') {
       // CASE 3
       logger.log('Loading secrets from AWS secret manager...');
@@ -69,14 +73,11 @@ export const initConfig = async () => {
         FIXED_JWT_TOKEN: secretData.FIXED_JWT_TOKEN,
         ...ssmConfig,
       };
-    } else {
-      // CASE 2: From file (default mode if ENV_FROM not set)
-      if (!process.env.ENV_FROM) {
-        logger.warn('ENV_FROM not set, defaulting to file mode');
-      }
-      logger.log(`Loading secrets from ${process.env.ENV_FROM || 'file'}`);
-      const secretData = loadFileSecret();
-      defaultConfig = secretData;
+    }
+    // CASE 4 (If need add another source of secrets)
+    // else if (process.env.ENV_FROM === 'azure') {}
+    else {
+      throw new Error('Invalid ENV_FROM');
     }
   } catch (error) {
     logger.error(error);
