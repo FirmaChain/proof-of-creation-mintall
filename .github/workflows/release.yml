@@ -4,11 +4,12 @@ on:
   push:
     branches:
       - develop
-      - master
+      - staging
+      - main
 
 jobs:
   release:
-    runs-on: fig-devnet-action
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3

@@ -1,37 +1,23 @@
+name: proof-of-creation-mintall
+
 services:
   app:
-    image: mintall-nft-cert-api
+    image: proof-of-creation-mintall
     build:
-      context: .
-      dockerfile: Dockerfile
-    networks:
-      - app-network
-    container_name: mintall-nft-cert-api
-    env_file:
-      - .env
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: proof-of-creation-mintall
     working_dir: /app
-    volumes:
-      - $HOME/.aws:/root/.aws
     ports:
       - '3000:3000'
     environment:
       - PORT=3000
       - NODE_ENV=development
-      # - DATABASE_HOST=postgres
-      # - DATABASE_PORT=5432
-      # - DATABASE_USER=app
-      # - DATABASE_NAME=mintall
-      # - REDIS_HOST=redis
-      # - REDIS_PORT=6379
-      # - AWS_REGION=ap-southeast-1
-      # - AWS_SECRET_NAME=prod/mintall-nft-cert-api/private-key
-    # depends_on:
-    #   - db
-    #   - redis
-
-networks:
-  app-network:
-    external: true 
+      - ENV_FROM=system
+    env_file:
+      - ../config/.env
+    networks:
+      - app-network
 
   # db:
   #   image: postgres:latest
@@ -52,6 +38,11 @@ networks:
   #     - '6379:6379'
   #   volumes:
   #     - redis_data:/data
+
 # volumes:
 #   postgres_data:
 #   redis_data:
+
+networks:
+  app-network:
+    external: true
