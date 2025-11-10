@@ -56,6 +56,7 @@ export const initConfig = async () => {
       logger.log('Loading secrets from system');
       const secretData = loadSystemSecret();
       defaultConfig = secretData;
+      console.log('defaultConfig', defaultConfig)
     } else if (process.env.ENV_FROM === 'aws') {
       // CASE 3
       logger.log('Loading secrets from AWS secret manager...');
