@@ -22,6 +22,8 @@ interface LocalSecretJson {
   REDIS_HOST: string;
   REDIS_PORT: number;
   REDIS_PASSWORD?: string;
+  CONTRACT_ADDRESS: string;
+  WALLET_ADDRESS: string;
 }
 
 interface DefaultConfig {
@@ -34,6 +36,8 @@ interface DefaultConfig {
   REDIS_HOST: string;
   REDIS_PORT: number;
   REDIS_PASSWORD?: string;
+  CONTRACT_ADDRESS: string;
+  WALLET_ADDRESS: string;
 }
 
 interface SsmParameterJson {
@@ -43,6 +47,8 @@ interface SsmParameterJson {
   REDIS_HOST: string;
   REDIS_PORT: number;
   REDIS_PASSWORD: string;
+  CONTRACT_ADDRESS: string;
+  WALLET_ADDRESS: string;
 }
 
 let defaultConfig: DefaultConfig;
@@ -88,16 +94,20 @@ export const initConfig = async () => {
 // CASE 1: From system, ENV_FROM = system
 const loadSystemSecret = (): LocalSecretJson => {
   if (
-    !process.env.PRIVATE_KEY ||
     !process.env.DATABASE_PASSWORD ||
     !process.env.FIXED_JWT_TOKEN ||
     !process.env.DATABASE_HOST ||
     !process.env.DATABASE_PORT ||
     !process.env.DATABASE_USER ||
     !process.env.REDIS_HOST ||
-    !process.env.REDIS_PORT
+    !process.env.REDIS_PORT ||
+    !process.env.PRIVATE_KEY ||
+    !process.env.CONTRACT_ADDRESS ||
+    !process.env.WALLET_ADDRESS
   ) {
-    throw new Error('Failed to load necessary secrets from local .env file.');
+    throw new Error(
+      'Missing required secrets in system environment variables.',
+    );
   }
   return {
     PRIVATE_KEY: process.env.PRIVATE_KEY,
@@ -108,6 +118,8 @@ const loadSystemSecret = (): LocalSecretJson => {
     DATABASE_USER: process.env.DATABASE_USER,
     REDIS_HOST: process.env.REDIS_HOST,
     REDIS_PORT: parseInt(process.env.REDIS_PORT),
+    CONTRACT_ADDRESS: process.env.CONTRACT_ADDRESS,
+    WALLET_ADDRESS: process.env.WALLET_ADDRESS,
   };
 };
 
@@ -122,6 +134,20 @@ const loadFileSecret = () => {
   });
   if (result.error) {
     throw new Error('Failed to load file secret.');
+  }
+  if (
+    !result.parsed?.PRIVATE_KEY ||
+    !result.parsed?.DATABASE_PASSWORD ||
+    !result.parsed?.FIXED_JWT_TOKEN ||
+    !result.parsed?.DATABASE_HOST ||
+    !result.parsed?.DATABASE_PORT ||
+    !result.parsed?.DATABASE_USER ||
+    !result.parsed?.REDIS_HOST ||
+    !result.parsed?.REDIS_PORT ||
+    !result.parsed?.CONTRACT_ADDRESS ||
+    !result.parsed?.WALLET_ADDRESS
+  ) {
+    throw new Error('Missing required secrets in local .env file.');
   }
   return result.parsed as unknown as LocalSecretJson;
 };
