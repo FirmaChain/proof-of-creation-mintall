@@ -42,6 +42,11 @@ lerna-debug.log*
 .env.production.local
 .env.local
 
+# Config environment files (only allow .env.example)
+config/.env
+config/.env.*
+!config/.env.example
+
 # temp directory
 .temp
 .tmp
@@ -56,6 +61,12 @@ pids
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 # Cursor
-.cursor/rules
+.cursor
 
 CHANGELOG.md
+
+# Claude
+.claude/
+
+# Yarn
+.yarn/install-state.gz

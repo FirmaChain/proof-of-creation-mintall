@@ -5,6 +5,7 @@ import {
 } from '@aws-sdk/client-secrets-manager';
 import { KMSClient, DecryptCommand } from '@aws-sdk/client-kms';
 import { GetParameterCommand, SSMClient } from '@aws-sdk/client-ssm';
+import { configDotenv } from 'dotenv';
 interface AwsSecretJson {
   ENCRYPT_PRIVATE_KEY: string;
   DATABASE_PASSWORD: string;
@@ -21,12 +22,22 @@ interface LocalSecretJson {
   REDIS_HOST: string;
   REDIS_PORT: number;
   REDIS_PASSWORD?: string;
+  CONTRACT_ADDRESS: string;
+  WALLET_ADDRESS: string;
 }
 
 interface DefaultConfig {
   PRIVATE_KEY: string;
   DATABASE_PASSWORD: string;
   FIXED_JWT_TOKEN: string;
+  DATABASE_HOST: string;
+  DATABASE_PORT: number;
+  DATABASE_USER: string;
+  REDIS_HOST: string;
+  REDIS_PORT: number;
+  REDIS_PASSWORD?: string;
+  CONTRACT_ADDRESS: string;
+  WALLET_ADDRESS: string;
 }
 
 interface SsmParameterJson {
@@ -36,6 +47,8 @@ interface SsmParameterJson {
   REDIS_HOST: string;
   REDIS_PORT: number;
   REDIS_PASSWORD: string;
+  CONTRACT_ADDRESS: string;
+  WALLET_ADDRESS: string;
 }
 
 let defaultConfig: DefaultConfig;
@@ -44,8 +57,18 @@ const logger = new Logger('Config load');
 
 export const initConfig = async () => {
   try {
-    // Load the secret data
-    if (process.env.NODE_ENV !== 'local') {
+    if (process.env.ENV_FROM === 'system') {
+      // CASE 1
+      logger.log('Loading secrets from system');
+      const secretData = loadSystemSecret();
+      defaultConfig = secretData;
+    } else if (process.env.ENV_FROM === 'file') {
+      // CASE 2
+      logger.log('Loading secrets from file');
+      const secretData = loadFileSecret();
+      defaultConfig = secretData;
+    } else if (process.env.ENV_FROM === 'aws') {
+      // CASE 3
       logger.log('Loading secrets from AWS secret manager...');
       const secretData = await loadAwsSecret();
       const privateKey = await decryptSecret(secretData.ENCRYPT_PRIVATE_KEY);
@@ -56,15 +79,11 @@ export const initConfig = async () => {
         FIXED_JWT_TOKEN: secretData.FIXED_JWT_TOKEN,
         ...ssmConfig,
       };
-    } else {
-      // load local secret
-      logger.log('Loading secrets from local .env file...');
-      const secretData = loadLocalSecret();
-      defaultConfig = {
-        PRIVATE_KEY: secretData.PRIVATE_KEY,
-        DATABASE_PASSWORD: secretData.DATABASE_PASSWORD,
-        FIXED_JWT_TOKEN: secretData.FIXED_JWT_TOKEN,
-      };
+    }
+    // CASE 4 (If need add another source of secrets)
+    // else if (process.env.ENV_FROM === 'azure') {}
+    else {
+      throw new Error('Invalid ENV_FROM');
     }
   } catch (error) {
     logger.error(error);
@@ -72,7 +91,68 @@ export const initConfig = async () => {
   }
 };
 
-// const load config from ssm
+// CASE 1: From system, ENV_FROM = system
+const loadSystemSecret = (): LocalSecretJson => {
+  if (
+    !process.env.DATABASE_PASSWORD ||
+    !process.env.FIXED_JWT_TOKEN ||
+    !process.env.DATABASE_HOST ||
+    !process.env.DATABASE_PORT ||
+    !process.env.DATABASE_USER ||
+    !process.env.REDIS_HOST ||
+    !process.env.REDIS_PORT ||
+    !process.env.PRIVATE_KEY ||
+    !process.env.CONTRACT_ADDRESS ||
+    !process.env.WALLET_ADDRESS
+  ) {
+    throw new Error(
+      'Missing required secrets in system environment variables.',
+    );
+  }
+  return {
+    PRIVATE_KEY: process.env.PRIVATE_KEY,
+    DATABASE_PASSWORD: process.env.DATABASE_PASSWORD,
+    FIXED_JWT_TOKEN: process.env.FIXED_JWT_TOKEN,
+    DATABASE_HOST: process.env.DATABASE_HOST,
+    DATABASE_PORT: parseInt(process.env.DATABASE_PORT),
+    DATABASE_USER: process.env.DATABASE_USER,
+    REDIS_HOST: process.env.REDIS_HOST,
+    REDIS_PORT: parseInt(process.env.REDIS_PORT),
+    CONTRACT_ADDRESS: process.env.CONTRACT_ADDRESS,
+    WALLET_ADDRESS: process.env.WALLET_ADDRESS,
+  };
+};
+
+// CASE 2: From file, ENV_FROM = file
+const loadFileSecret = () => {
+  let filePath = 'config/.env';
+  if (process.env.ENV_FILE_PATH) {
+    filePath = process.env.ENV_FILE_PATH;
+  }
+  const result = configDotenv({
+    path: filePath,
+  });
+  if (result.error) {
+    throw new Error('Failed to load file secret.');
+  }
+  if (
+    !result.parsed?.PRIVATE_KEY ||
+    !result.parsed?.DATABASE_PASSWORD ||
+    !result.parsed?.FIXED_JWT_TOKEN ||
+    !result.parsed?.DATABASE_HOST ||
+    !result.parsed?.DATABASE_PORT ||
+    !result.parsed?.DATABASE_USER ||
+    !result.parsed?.REDIS_HOST ||
+    !result.parsed?.REDIS_PORT ||
+    !result.parsed?.CONTRACT_ADDRESS ||
+    !result.parsed?.WALLET_ADDRESS
+  ) {
+    throw new Error('Missing required secrets in local .env file.');
+  }
+  return result.parsed as unknown as LocalSecretJson;
+};
+
+// CASE 3.1: From AWS SSM, ENV_FROM = aws
 const loadSsmConfig = async (parameterName: string | undefined) => {
   try {
     if (!parameterName) {
@@ -97,33 +177,7 @@ const loadSsmConfig = async (parameterName: string | undefined) => {
   }
 };
 
-// load local secret when NODE_ENV is local
-const loadLocalSecret = (): LocalSecretJson => {
-  if (
-    !process.env.PRIVATE_KEY ||
-    !process.env.DATABASE_PASSWORD ||
-    !process.env.FIXED_JWT_TOKEN ||
-    !process.env.DATABASE_HOST ||
-    !process.env.DATABASE_PORT ||
-    !process.env.DATABASE_USER ||
-    !process.env.REDIS_HOST ||
-    !process.env.REDIS_PORT
-  ) {
-    throw new Error('Failed to load necessary secrets from local .env file.');
-  }
-  return {
-    PRIVATE_KEY: process.env.PRIVATE_KEY,
-    DATABASE_PASSWORD: process.env.DATABASE_PASSWORD,
-    FIXED_JWT_TOKEN: process.env.FIXED_JWT_TOKEN,
-    DATABASE_HOST: process.env.DATABASE_HOST,
-    DATABASE_PORT: parseInt(process.env.DATABASE_PORT),
-    DATABASE_USER: process.env.DATABASE_USER,
-    REDIS_HOST: process.env.REDIS_HOST,
-    REDIS_PORT: parseInt(process.env.REDIS_PORT),
-  };
-};
-
-// load aws secret when NODE_ENV is not local
+// CASE 3.2: From AWS Secret Manager, ENV_FROM = aws
 const loadAwsSecret = async (): Promise<AwsSecretJson> => {
   try {
     const secretName = process.env.AWS_SECRET_NAME as string;
@@ -155,7 +209,7 @@ const loadAwsSecret = async (): Promise<AwsSecretJson> => {
   }
 };
 
-// decrypt secret with aws kms
+// For CASE 3: decrypt secret with aws kms
 const decryptSecret = async (
   encryptedSecret: string,
 ): Promise<string | null> => {

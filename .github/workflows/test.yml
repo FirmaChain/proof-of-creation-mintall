@@ -5,7 +5,8 @@ on:
   push:
     branches:
       - develop
-      - master
+      - staging
+      - main
 
 jobs:
   test:

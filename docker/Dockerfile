@@ -1,4 +1,4 @@
-# mintall-nft-cert-api
+# proof-of-creation-mintall
 FROM node:23.6.0 AS builder
 WORKDIR /app
 COPY package.json .yarnrc.yml yarn.lock ./
